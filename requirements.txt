@@ -9,3 +9,5 @@ MarkupSafe==2.1.5
 python-dotenv==1.0.1
 SQLAlchemy==2.0.29
 typing_extensions==4.11.0
+pyrogram==2.0.106
+loguru==0.7.2
