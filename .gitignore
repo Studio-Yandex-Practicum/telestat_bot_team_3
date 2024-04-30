@@ -1,3 +1,6 @@
+# IDE
+.idea
+
 # Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[cod]
@@ -14,4 +17,13 @@ venv.bak/
 
 # pyenv
 .python-version
+
+# session
+*.session
+
+# Logging
+*.logs
+
+# alembic
+alembic/
 
