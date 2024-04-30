@@ -38,6 +38,7 @@ keyboard = ReplyKeyboardMarkup(keyboard=[
 ], one_time_keyboard=True, resize_keyboard=True)
 
 
+
 @app.on_message(filters.command('start'))
 async def command_start(client: Client, message: messages_and_media.message.Message):
     logger.info('Проверка на авторизацию')
