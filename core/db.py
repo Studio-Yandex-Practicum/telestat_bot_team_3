@@ -18,7 +18,7 @@ Base = declarative_base(cls=PreBase)
 
 engine = create_async_engine(
     Config.DB_URI,
-    echo=True)  # 'postgresql+asyncpg://yap:yap@10.0.0.7:5432/yap' --> user:yap, password:yap, dbname:yap
+    echo=True)
 
 async_session = AsyncSession(engine)
 
