@@ -15,4 +15,5 @@ python-dotenv==1.0.1
 SQLAlchemy==2.0.29
 TgCrypto==1.2.5
 typing_extensions==4.11.0
-win32-setctime==1.1.0
+pyrogram==2.0.106
+loguru==0.7.2
