@@ -17,3 +17,4 @@ TgCrypto==1.2.5
 typing_extensions==4.11.0
 pyrogram==2.0.106
 loguru==0.7.2
+aiogoogle==5.7.0
