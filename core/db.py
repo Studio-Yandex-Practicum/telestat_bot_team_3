@@ -17,6 +17,7 @@ class PreBase:
 
 Base = declarative_base(cls=PreBase)
 
+print(Config.DB_URI)
 engine = create_async_engine(
     Config.DB_URI,
     echo=True)
