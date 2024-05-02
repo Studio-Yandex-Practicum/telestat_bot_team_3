@@ -15,6 +15,9 @@ async def check_authorization(username=None, is_superuser=False):
             session
             )
 
+    if db is None:
+        return False
+
     if username == db.username and db.is_admin and db.is_active:
         if (is_superuser and
                 is_superuser == db.is_superuser or
