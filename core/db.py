@@ -1,5 +1,6 @@
 from sqlalchemy import Column, Integer, Sequence
-from sqlalchemy.ext.asyncio import AsyncSession, create_async_engine
+from sqlalchemy.ext.asyncio import (AsyncSession, async_sessionmaker,
+                                    create_async_engine)
 from sqlalchemy.orm import declarative_base, declared_attr, sessionmaker
 
 from settings import Config
@@ -22,11 +23,4 @@ engine = create_async_engine(
 
 async_session = AsyncSession(engine)
 
-AsyncSessionLocal = sessionmaker(engine, class_=AsyncSession)
-
-
-async def get_async_session():
-    """Получение асинхронных сессий."""
-
-    async with AsyncSessionLocal() as async_session:
-        yield async_session
+async_session = async_sessionmaker(engine)
