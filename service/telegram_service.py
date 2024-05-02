@@ -1,4 +1,4 @@
-from core.db import engine, async_session
+from core.db import async_session, engine
 from crud.userstg import userstg_crud
 from permissions.permissions import check_authorization
 
