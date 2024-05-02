@@ -12,9 +12,9 @@ class Config(object):
     """Конфигурация проекта."""
 
     DB_URI = os.environ['DB_URI']
-    API_ID = os.environ['API_ID']
-    API_HASH = os.environ['API_HASH']
-    BOT_TOKEN = os.environ['BOT_TOKEN']
+    # API_ID = os.environ['API_ID']
+    # API_HASH = os.environ['API_HASH']
+    # BOT_TOKEN = os.environ['BOT_TOKEN']
 
 
 def configure_logging() -> Logger:
