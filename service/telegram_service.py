@@ -9,7 +9,7 @@ async def add_users(username, users=None):
     if not check_authorization(username, True) or users is None:
         return False
 
-    users = [{'username': item, 'is_superuser': False, 'is_admin': True} for item in users.split(', ')]
+    users = [{'username': user, 'is_superuser': False, 'is_admin': True} for user in users.split(', ')]
 
     db = ''
     async with async_session() as session:
