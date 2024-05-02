@@ -2,7 +2,7 @@ from crud.userstg import userstg_crud
 from core.db import engine
 
 
-async def check_authorization(username=None):
+async def check_authorization(username=None, is_superuser=False):
     """Проверка пользователя бота."""
 
     if username is None:
@@ -15,6 +15,12 @@ async def check_authorization(username=None):
             session
             )
 
+    if db is None:
+        return False
+
     if username == db.username and db.is_admin and db.is_active:
-        return True
+        if (is_superuser and
+                is_superuser == db.is_superuser or
+                not is_superuser):
+            return True
     return False

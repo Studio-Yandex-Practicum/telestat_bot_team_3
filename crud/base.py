@@ -22,3 +22,16 @@ class CRUDBase:
         return ((await session.execute(
             select(self.model).where(
                 attr == attr_value))).first())
+
+    async def create(
+            self,
+            obj,
+            session: AsyncSession,
+    ):
+        """Обновление значений в таблице ДБ."""
+
+        db_obj = self.model(**obj)
+        session.add(db_obj)
+        await session.commit()
+        await session.refresh(db_obj)
+        return db_obj

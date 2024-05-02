@@ -2,6 +2,7 @@
 .idea
 
 # Byte-compiled / optimized / DLL files
+core/__pycache__/
 __pycache__/
 *.py[cod]
 *$py.class
@@ -23,6 +24,7 @@ venv.bak/
 
 # Logging
 *.logs
+logs/
 
 # alembic
 alembic/
