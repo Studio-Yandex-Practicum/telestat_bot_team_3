@@ -6,7 +6,7 @@ from permissions.permissions import check_authorization
 async def add_users(username, users=None):
     """Добавление пользователей в ДБ."""
 
-    if not check_authorization(username, True) or users is None:
+    if not await check_authorization(username, True) or users is None:
         return False
 
     users = [{'username': user, 'is_superuser': False, 'is_admin': True} for user in users.split(', ')]
