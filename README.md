@@ -134,6 +134,6 @@ version_path_separator = os  # Use os.pathsep. Default configuration used for ne
 для работы приложения.
 
 ```
-alembic revision --authogenerate -m "This Your're commit
+alembic revision --authogenerate -m "This Your're commit"
 alembic upgrade head
 ```
