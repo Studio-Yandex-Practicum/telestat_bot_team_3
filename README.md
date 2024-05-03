@@ -72,3 +72,39 @@ API_ID=12345678
 API_HASH=9999aa9aa9a9999a99a999aa9a599a99
 BOT_TOKEN=1234567890:AAAzz2z2zzzPzPPz1zVCz0zzfXz_Kzz1234
 ```
+
+### В сформированной автоматически папке Alembic необходимо внести правки в файл
+### env.py следующим образом:
+
+```
+import asyncio
+import os  ## Необходимо добавить-----------------------------------------------------
+from logging.config import fileConfig
+
+from dotenv import load_dotenv  ## Необходимо добавить--------------------------------
+from sqlalchemy import pool
+from sqlalchemy.engine import Connection
+from sqlalchemy.ext.asyncio import async_engine_from_config
+
+from alembic import context
+from core.base import Base  ## Необходимо добавить------------------------------------
+
+load_dotenv('.env')  ## Необходимо добавить-------------------------------------------
+
+# this is the Alembic Config object, which provides
+# access to the values within the .ini file in use.
+config = context.config
+
+config.set_main_option('sqlalchemy.url', os.environ['DB_URI'])  ## Необходимо добавить
+
+# Interpret the config file for Python logging.
+# This line sets up loggers basically.
+if config.config_file_name is not None:
+    fileConfig(config.config_file_name)
+
+# add your model's MetaData object here
+# for 'autogenerate' support
+# from myapp import mymodel
+# target_metadata = mymodel.Base.metadata
+target_metadata = Base.metadata
+```
