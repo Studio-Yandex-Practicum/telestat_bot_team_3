@@ -35,7 +35,7 @@ Telegram-Бот для маркетинговых исследований те�
 * [GIT](https://git-scm.com/book/en/v2/Getting-Started-Installing-Git/)
 
 ```
-git clone 
+git clone git@github.com:Studio-Yandex-Practicum/telestat_bot_team_3.git
 ```
 
 ## Настройка проекта и организация подключения к базе данных PostgresSQL.
@@ -62,4 +62,13 @@ pip install -r requirements.txt
 находясь в рабочей директории проекта
 ```
 alembic init --template async alembic
+```
+
+### Создать в корневой директории проекта файл .env и заполнить в нём следующее:
+
+```
+DB_URI=postgresql+asyncpg://you_username:you_password@10.0.0.7/you_database_name
+API_ID=12345678
+API_HASH=9999aa9aa9a9999a99a999aa9a599a99
+BOT_TOKEN=1234567890:AAAzz2z2zzzPzPPz1zVCz0zzfXz_Kzz1234
 ```
