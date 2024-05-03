@@ -108,3 +108,26 @@ if config.config_file_name is not None:
 # target_metadata = mymodel.Base.metadata
 target_metadata = Base.metadata
 ```
+
+### В сформированном в корневой директории файле Alembic.ini необходимо внести правки:
+### по умолчанию параметр version_path_separator = None, Нужно исправить на os.
+
+```
+version_path_separator = os  # Use os.pathsep. Default configuration used for new projects.
+```
+
+### Когда все указанные выше настройки произведены система готова к работе и вы сможете 
+### подключиться к Postgres и вносить изменения в таблицы, Виды Функции и Триггеры Postgress
+### из кода Python работающего из виртуального окружения вашей копии проекта sysinfo_bot.
+### Подразумевается что база данных Postgress у вас уже установлена на удалённом сервере и готова
+### принимать подключение пользователей.
+
+Для того чтобы управлять системой commit Alembic необходимо изучить alembic --help
+
+Команды для создания необходимых таблиц счётчиков последовательностей и прочих необходимых компонентов
+для работы приложения.
+
+```
+alembic revision --authogenerate -m "This Your're commit
+alembic upgrade head
+```
