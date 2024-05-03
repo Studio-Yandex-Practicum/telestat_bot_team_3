@@ -24,6 +24,7 @@ Telegram-Бот для маркетинговых исследований те�
 ## Технологии и библиотеки
 
 * [Python](https://www.python.org/)
+* [Pyrogram](https://docs.pyrogram.org/)
 * [SQLAlchemy](https://pypi.org/project/SQLAlchemy/)
 * [Alembic](https://pypi.org/project/alembic/)
 * [Asyncio](https://docs.python.org/3/library/asyncio.html)
