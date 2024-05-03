@@ -19,9 +19,47 @@ bugfix/исправляемый_баг
 
 Telegram-Бот для маркетинговых исследований телеграм каналов (Telestat) | Команда Максима Соловьева
 
+
+
+## Технологии и библиотеки
+
+* [Python](https://www.python.org/)
+* [SQLAlchemy](https://pypi.org/project/SQLAlchemy/)
+* [Alembic](https://pypi.org/project/alembic/)
+* [Asyncio](https://docs.python.org/3/library/asyncio.html)
+* [Aiogoogle](https://aiogoogle.readthedocs.io/en/latest/)
+
+## Установите и настройте систему контроля версий репозиториев GIT,
+## создайте ключ для ssh сессий с GitHub выполните команду:
+
+* [GIT](https://git-scm.com/book/en/v2/Getting-Started-Installing-Git/)
+
+```
+git clone 
+```
+
 ## Настройка проекта и организация подключения к базе данных PostgresSQL.
 
+### Создать рабочую директорию проекта по вашему пути на сервере, 
+### ny_work_directory/
 ### Для настройки проекта необходимо установить:
 
-* - Python версии 3.11.4 или выше
-* - 
+* Python версии 3.11.4 или выше
+
+### Выполнить следующие команды для конфигурации "virtual enviroments" OS Windows
+### и устанавливаем все необходимые зависимости проекта:
+### Внимание для OS Linux команды будут отличаться!
+
+```
+python -m venv venv
+source venv/Scripts/activate
+python -m pip install --uprade pip
+pip install -r requirements.txt
+```
+### Настройка подключения SQLAlchemy и Alembic для взаимодействия с Postgres:
+
+Необходимо выполнить команду инициализации работы Alembic из консоли
+находясь в рабочей директории проекта
+```
+alembic init --template async alembic
+```
