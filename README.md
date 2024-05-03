@@ -41,7 +41,7 @@ git clone git@github.com:Studio-Yandex-Practicum/telestat_bot_team_3.git
 ## Настройка проекта и организация подключения к базе данных PostgresSQL.
 
 ### Создать рабочую директорию проекта по вашему пути на сервере, 
-### ny_work_directory/
+### my_work_directory/
 ### Для настройки проекта необходимо установить:
 
 * Python версии 3.11.4 или выше
