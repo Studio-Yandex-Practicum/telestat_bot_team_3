@@ -1,3 +1,5 @@
+from service.telegram_service import TelegramGroup, get_chat_users, get_chat_members_count
+
 
 async def add_admin(client, message):
     await client.send_message(
@@ -26,7 +28,8 @@ async def auto_generate_report(client, message):
 
 
 async def generate_report(client, message):
-    await client.send_message(message.chat.id, '...Формирование отчёта...')
+    chat = TelegramGroup(client, 'telestat_team')
+    await client.send_message(message.chat.id, await TelegramGroup.get_info_chat_user(client, 'telestat_team', 'Maks_insurance'))
 
 
 async def scheduling(client, message):

@@ -4,7 +4,7 @@ from pyrogram.types import messages_and_media
 
 from settings import configure_logging
 from buttons import bot_1_keyboard
-from logic import add_admin, del_admin, choise_channel, set_period
+from logic import add_admin, del_admin, choise_channel, generate_report, set_period
 from permissions.permissions import check_authorization
 
 
@@ -51,10 +51,7 @@ async def command_start(
 
             if message.text == 'Начать сбор аналитики':
                 logger.info('Бот начал работу')
-                await client.send_message(
-                    message.chat.id,
-                    '...Здесь идет активный сбор данных пользователей...'
-                )
+                await generate_report(client, message)
 
             elif message.text == Commands.add_admin.value:
                 logger.info('Добавляем администратора')
