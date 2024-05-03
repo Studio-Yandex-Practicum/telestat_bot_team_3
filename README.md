@@ -56,6 +56,7 @@ source venv/Scripts/activate
 python -m pip install --uprade pip
 pip install -r requirements.txt
 ```
+
 ### Настройка подключения SQLAlchemy и Alembic для взаимодействия с Postgres:
 
 Необходимо выполнить команду инициализации работы Alembic из консоли
@@ -72,6 +73,11 @@ API_ID=12345678
 API_HASH=9999aa9aa9a9999a99a999aa9a599a99
 BOT_TOKEN=1234567890:AAAzz2z2zzzPzPPz1zVCz0zzfXz_Kzz1234
 ```
+
+Где DB_URI - с параметрами подлкючения вашего сервера
+    API_ID, API_HASH - это ваши данные из телеграмм для работы с api
+    * [Telegram APIs](https://core.telegram.org/) Читайте здесь!
+    BOT_TOKEN - уникальный ключ вашего бота
 
 ### В сформированной автоматически папке Alembic необходимо внести правки в файл
 ### env.py следующим образом:
