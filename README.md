@@ -54,7 +54,7 @@ git clone git@github.com:Studio-Yandex-Practicum/telestat_bot_team_3.git
 ```
 python -m venv venv
 source venv/Scripts/activate
-python -m pip install --uprade pip
+python -m pip install --upgrade pip
 pip install -r requirements.txt
 ```
 
