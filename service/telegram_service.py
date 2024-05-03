@@ -3,13 +3,13 @@ from crud.userstg import userstg_crud
 from permissions.permissions import check_authorization
 
 
-async def add_users(username, users=None, is_superuser=False):
+async def add_users(username, users=None, is_superuser=False, is_active=True):
     """Добавление пользователей в ДБ."""
 
     if not await check_authorization(username, True) or users is None:
         return False
 
-    users = [{'username': user, 'is_superuser': is_superuser, 'is_admin': True} for user in users.split(', ')]
+    users = [{'username': user, 'is_superuser': is_superuser, 'is_admin': True, 'is_active': is_active} for user in users.split(', ')]
 
     db = ''
     async with async_session() as session:
@@ -17,3 +17,8 @@ async def add_users(username, users=None, is_superuser=False):
             for user in users:
                 db += ' ' + (await userstg_crud.create(user, session)).username
     return db
+
+
+async def del_users():
+    """Установка пользователя из ДБ."""
+    pass
