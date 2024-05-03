@@ -46,7 +46,7 @@ async def add_users(username, users=None):
     if not await check_authorization(username, True) or users is None:
         return False
 
-    users = [{'username': user, 'is_superuser': False, 'is_admin': True} for user in users.split(', ')]
+    users = [{'username': user, 'is_superuser': is_superuser, 'is_admin': True, 'is_active': is_active} for user in users.split(', ')]
 
     db = ''
     async with async_session() as session:
@@ -67,3 +67,8 @@ async def get_chat_users(bot: Client, channel: str, filter=None):
 
 async def get_chat_members_count(bot: Client, channel: str,):
     return await bot.get_chat_members_count(channel)
+
+
+async def del_users():
+    """Установка пользователя из ДБ."""
+    pass
