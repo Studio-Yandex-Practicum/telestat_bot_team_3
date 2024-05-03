@@ -34,60 +34,51 @@ async def command_start(
 
     logger.info('Проверка на авторизацию')
 
+    if not await check_authorization(message.chat.username):
+        await client.send_message(
+            message.chat.id,
+            'Управлять ботом могут только Администраторы.'
+        )
+        logger.info(f'Неудачная авторизация {message.chat.username}!')
+    else:
+        await client.send_message(
+            message.chat.id,
+            'Вы прошли авторизацию!',
+            reply_markup=bot_1_keyboard
+        )
+        logger.debug(f'{message.chat.username} авторизован!')
 
-# Proper use of get_chat
-async def get_chat_title(chat_id: Union[int, str]):
-    async with bot_1:
-        chat = await bot_1.get_chat(chat_id)
-        print(chat)
+        @bot_1.on_message()
+        async def collect_analitycs(
+            client: Client,
+            message: messages_and_media.message.Message
+        ):
+            """Обработчик команд админки бота №1."""
 
-get_chat_title()    
+            if message.text == 'Начать сбор аналитики':
+                logger.info('Бот начал работу')
+                await client.send_message(
+                    message.chat.id,
+                    '...Здесь идет активный сбор данных пользователей...'
+                )
 
-    # if not await check_authorization(message.chat.username):
-    #     await client.send_message(
-    #         message.chat.id,
-    #         'Управлять ботом могут только Администраторы.'
-    #     )
-    #     logger.info(f'Неудачная авторизация {message.chat.username}!')
-    # else:
-    #     await client.send_message(
-    #         message.chat.id,
-    #         'Вы прошли авторизацию!',
-    #         reply_markup=bot_1_keyboard
-    #     )
-    #     logger.debug(f'{message.chat.username} авторизован!')
+            elif message.text == Commands.add_admin.value:
+                logger.info('Добавляем администратора')
+                await add_admin(client, message)
 
-    #     @bot_1.on_message()
-    #     async def collect_analitycs(
-    #         client: Client,
-    #         message: messages_and_media.message.Message
-    #     ):
-    #         """Обработчик команд админки бота №1."""
+            elif message.text == Commands.del_admin.value:
+                logger.info('Удаляем администратора')
+                await del_admin(client, message)
 
-    #         if message.text == 'Начать сбор аналитики':
-    #             logger.info('Бот начал работу')
-    #             await client.send_message(
-    #                 message.chat.id,
-    #                 '...Здесь идет активный сбор данных пользователей...'
-    #             )
+            elif message.text == Commands.choise_channel.value:
+                logger.info('Выбираем телеграм канал')
+                await choise_channel(client, message)
 
-    #         elif message.text == Commands.add_admin.value:
-    #             logger.info('Добавляем администратора')
-    #             await add_admin(client, message)
+            elif message.text == Commands.set_period.value:
+                logger.info('Устананвливаем период сбора данных')
+                await set_period(client, message)
 
-    #         elif message.text == Commands.del_admin.value:
-    #             logger.info('Удаляем администратора')
-    #             await del_admin(client, message)
-
-    #         elif message.text == Commands.choise_channel.value:
-    #             logger.info('Выбираем телеграм канал')
-    #             await choise_channel(client, message)
-
-    #         elif message.text == Commands.set_period.value:
-    #             logger.info('Устананвливаем период сбора данных')
-    #             await set_period(client, message)
-
-    #     await collect_analitycs(client, message)
+        await collect_analitycs(client, message)
 
 
 if __name__ == '__main__':
