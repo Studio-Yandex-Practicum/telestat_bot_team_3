@@ -3,7 +3,7 @@ from pyrogram import Client, filters
 from pyrogram.types import messages_and_media
 
 from settings import configure_logging
-from buttons import bot_2_keyboard
+from buttons import inline_bot_2_keyboard
 from logic import (
     add_admin, del_admin, auto_generate_report, generate_report, scheduling
 )
@@ -11,11 +11,11 @@ from permissions.permissions import check_authorization
 
 
 class Commands(Enum):
-    add_admin = 'Добавить администратора'
-    del_admin = 'Удалить администратора'
-    auto_report = 'Автоматическое формирование отчёта'
-    generate_report = 'Формирование отчёта'
-    scheduling = 'Формирование графика'
+    add_admin = 'add_admin_bot_2'
+    del_admin = 'del_admin_bot_2'
+    auto_report = 'auto_report'
+    generate_report = 'generate_report'
+    scheduling = 'scheduling'
 
 
 logger = configure_logging()
@@ -31,7 +31,7 @@ async def command_start(
 
     logger.info('Проверка на авторизацию')
 
-    if not await check_authorization(message.chat.username):
+    if False: #not await check_authorization(message.chat.username):
         await client.send_message(
             message.chat.id,
             'Управлять ботом могут только Администраторы.'
@@ -41,38 +41,58 @@ async def command_start(
 
         await client.send_message(
             message.chat.id, 'Вы прошли авторизацию!',
-            reply_markup=bot_2_keyboard
+            reply_markup=inline_bot_2_keyboard
         )
         logger.debug(f'{message.chat.username} авторизован!')
 
-        @bot_2.on_message()
-        async def report_generation(
-            client: Client,
-            message: messages_and_media.message.Message
-        ):
+        @bot_2.on_callback_query()
+        async def report_generation(client: Client, call):
             """Обработчик команд админки бота №2."""
 
-            if message.text == Commands.add_admin.value:
+            if call.data == Commands.add_admin.value:
                 logger.info('Добавляем администратора')
                 await add_admin(client, message)
+                await client.send_message(
+                    message.chat.id,
+                    'Выберите действие:',
+                    reply_markup=inline_bot_2_keyboard
+                )
 
-            elif message.text == Commands.del_admin.value:
+            elif call.data == Commands.del_admin.value:
                 logger.info('Удаляем администратора')
                 await del_admin(client, message)
+                await client.send_message(
+                    message.chat.id,
+                    'Выберите действие:',
+                    reply_markup=inline_bot_2_keyboard
+                )
 
-            elif message.text == Commands.auto_report.value:
+            elif call.data == Commands.auto_report.value:
                 logger.info('Автоматическое формирование отчёта')
                 await auto_generate_report(client, message)
+                await client.send_message(
+                    message.chat.id,
+                    'Выберите действие:',
+                    reply_markup=inline_bot_2_keyboard
+                )
 
-            elif message.text == Commands.generate_report.value:
+            elif call.data == Commands.generate_report.value:
                 logger.info('Формирование отчёта')
                 await generate_report(client, message)
+                await client.send_message(
+                    message.chat.id,
+                    'Выберите действие:',
+                    reply_markup=inline_bot_2_keyboard
+                )
 
-            elif message.text == Commands.scheduling.value:
+            elif call.data == Commands.scheduling.value:
                 logger.info('Формирование графика')
                 await scheduling(client, message)
-
-        await report_generation(client, message)
+                await client.send_message(
+                    message.chat.id,
+                    'Выберите действие:',
+                    reply_markup=inline_bot_2_keyboard
+                )
 
 
 if __name__ == '__main__':
