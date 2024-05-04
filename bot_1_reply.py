@@ -29,7 +29,7 @@ async def command_start(
 
     logger.info('Проверка на авторизацию')
 
-    if False: #not await check_authorization(message.chat.username):
+    if not await check_authorization(message.chat.username):
         await client.send_message(
             message.chat.id,
             'Управлять ботом могут только Администраторы.'
