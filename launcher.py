@@ -6,36 +6,20 @@ import argparse
 from pyrogram import Client
 from settings import Config, logger
 
-from service.telegram_service import add_users
 from crud.userstg import userstg_crud
+from core.db import async_session, engine
 
 
-START_TEXT = """
-   _____       _                                            ___           _   
-  (_   _)     (_ )                                         (  _`\        ( )_ 
-    | |   __   | |    __     __   _ __   _ _   ___ ___     | (_) )   _   | ,_)
-    | | /'__`\ | |  /'__`\ /'_ `\( '__)/'_` )/' _ ` _ `\   |  _ <' /'_`\ | |  
-    | |(  ___/ | | (  ___/( (_) || |  ( (_| || ( ) ( ) |   | (_) )( (_) )| |_ 
-    (_)`\____)(___)`\____)`\__  |(_)  `\__,_)(_) (_) (_)   (____/'`\___/'`\__)
-                          ( )_) |                                             
-                           \___/'                                             
-
-Выберите действие:
-
-    1. Первичный запуск (инициализация/настройка)
-    2. Запуск ботов
-"""
+API_ID = Config.API_ID
+API_HASH = Config.API_HASH
 
 
-def register_sessions():
+async def register_sessions():
     """
     Функция создания сессии подключения к telegram.
 
     Возвращает username созданной сессии.
     """
-
-    API_ID = Config.API_ID
-    API_HASH = Config.API_HASH
 
     if not API_ID or not API_HASH:
         raise ValueError("API_ID или API_HASH не найдены в файле .env")
@@ -45,24 +29,27 @@ def register_sessions():
     if not session_name:
         return None
 
+    if not os.path.isdir('sessions'):
+        os.mkdir('sessions')
+
     session = Client(
         name=session_name,
-        api_id=Config.API_ID,
-        api_hash=Config.API_HASH,
+        api_id=API_ID,
+        api_hash=API_HASH,
         workdir="sessions/"
     )
 
-    # async with session:
-    user_data = session.get_me()
+    async with session:
+        user_data = await session.get_me()
 
     logger.success(
         f'Сессия успешно добавлена @{user_data.username} | '
         f'{user_data.first_name} {user_data.last_name}')
 
-    return user_data.username
+    return session_name
 
 
-def get_username_from_session_name(session_name):
+async def get_username_from_session_name(session_name):
     """
     Функция получения username из сохраненной сессии.
     Принимает обязательным аргументом имя сессии session_name.
@@ -70,29 +57,25 @@ def get_username_from_session_name(session_name):
 
     session = Client(session_name)
 
-    # async with session:
-    user_data = session.get_me()
+    async with session:
+        user_data = await session.get_me()
     return user_data.username
 
 
-def get_session_name():
+async def get_session_name():
     """Функция проверяет наличие файла сессии, возвращает имя сессии."""
-    # session_names = glob.glob('sessions/*.session')
-    # session_names = [os.path.splitext(os.path.basename(file))[0] for file in session_names]
 
-    file = glob.glob('*.session')
+    file = glob.glob('/sessions/*.session')
 
     if not file:
         session_name = None
-        # print('запускаем создание сессии')
-        # session_name = register_sessions()
     else:
         session_name = os.path.splitext(os.path.basename(file[0]))[0]
-        print(f'Сессия уже создана: {session_name}')
+        logger.debug(f'Сессия уже создана: {session_name}')
     return session_name
 
 
-def get_superuser():
+async def get_superuser():
     """
     Функция получения суперюзера из базы данных.
 
@@ -100,12 +83,16 @@ def get_superuser():
     Если суперюзера в базе нет, то возвращает None.
     """
 
-    print('Возвращаем суперюзера из бд')
-    superuser = userstg_crud.get_by_attr(is_superuser=True)
-    return superuser
+    async with engine.connect() as session:
+        superuser = await userstg_crud.get_by_attr(
+            attr_name='is_superuser',
+            attr_value=True,
+            session=session
+        )
+    return superuser  #  ('orbikadm', None, True, True, True, 1)
 
 
-def create_superuser(username=None):
+async def create_superuser(username=None):
     """
     Функция создания суперюзера.
 
@@ -113,37 +100,23 @@ def create_superuser(username=None):
     суперюзера.
     """
 
-    print('Создаем суперюзера')
     if not username:
-        username = input('Введите username телеграм без символа @')
+        username = input('Введите username телеграм без символа @: ')
         if username.startswith('@'):
             username.strip('@')
-    add_users(username, is_superuser=True, is_active=True)
+
+    user = {
+        'username': username,
+        'is_superuser': True,
+        'is_active': True,
+        'is_admin': True,
+    }
+    async with async_session() as session:
+        async with engine.connect():
+            await userstg_crud.create(user, session=session)
 
 
-def process() -> None:
-    """Функция назначения и проверки аргументов командной строки."""
-    parser = argparse.ArgumentParser(description='Бот для сбора аналитики')
-    parser.add_argument(
-        '-i', '--init',
-        action='store_true',
-        help='initial launch'
-    )
-
-    print(get_session_name())
-
-    args = parser.parse_args()
-
-
-    # if args.init:
-    run_initialization() if args.init else print('Обычный запуск')
-    # elif action == 2:
-    #     tg_clients = await get_tg_clients()
-
-    #     await run_tasks(tg_clients=tg_clients)
-
-
-def run_initialization():
+async def run_initialization():
     """
     Основная логика процесса инициализации.
 
@@ -152,15 +125,31 @@ def run_initialization():
     При необходимости запускается процесс создания сессии подключения телеграм
     и добавление пользователя в качестве суперпользователя.
     """
-    # check_db_connect()
-    session_name = get_session_name()
-    username = get_username_from_session_name(session_name)
-    print('run_initialization, сессия:', session_name)
-    superuser = get_superuser()
+
+    logger.debug('Запуск инициализатора')
+    session_name = await get_session_name()
+    if not session_name:
+        session_name = await register_sessions()
+    username = await get_username_from_session_name(session_name)
+    logger.debug(f'Cессия: {session_name}, username: {username}')
+    superuser = await get_superuser()
     if not superuser:
-        create_superuser(username)
+        logger.debug('Создание суперюзера')
+        await create_superuser(username)
+        logger.debug(f'Суперюзер {username} успешно создан')
+    logger.debug('Работа инициализатора окончена')
 
 
-# run_initialization()
+async def init_process() -> None:
+    """Функция назначения и проверки аргументов командной строки."""
+    parser = argparse.ArgumentParser(description='Бот для сбора аналитики')
+    parser.add_argument(
+        '-i', '--init',
+        action='store_true',
+        help='initial launch'
+    )
 
-process()
+    args = parser.parse_args()
+
+    if args.init:
+        await run_initialization()
