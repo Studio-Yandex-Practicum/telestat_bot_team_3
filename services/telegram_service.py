@@ -79,13 +79,23 @@ class ChatUserInfo():
         return last_messages
 
 
-async def add_users(username, users=None):
+async def add_users(user_id,
+                    users: list[dict] = None,
+                    is_superuser: bool = False,
+                    is_active: bool = True
+                    ):
     """Добавление пользователей в ДБ."""
 
-    if not await check_authorization(username, True) or users is None:
+    if not await check_authorization(user_id, True) or users is None:
         return False
 
-    users = [{'username': user, 'is_superuser': is_superuser, 'is_admin': True, 'is_active': is_active} for user in users.split(', ')]
+    users = [{
+        'user_id': user.user_id,
+        'username': user.username,
+        'is_superuser': is_superuser,
+        'is_admin': True,
+        'is_active': is_active
+        } for user in users]
 
     db = ''
     async with async_session() as session:

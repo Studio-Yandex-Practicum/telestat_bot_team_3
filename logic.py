@@ -1,12 +1,31 @@
-from datetime import datetime
-
-from services.telegram_service import ChatUserInfo
+from services.telegram_service import add_users
+from pyrogram.types import InlineKeyboardMarkup, InlineKeyboardButton
+from buttons import add_users_key
 
 
 async def add_admin(client, message):
+    """Добавление администратора(ов) в ДБ."""
+
     await client.send_message(
         message.chat.id, '...Добавление администратора...'
-    )
+        )
+    users_str = '@Maks_insurance, @jzx659, @XSteelHunterX'
+    users = await client.get_users(users_str.split(', '))
+    users = [{'id': data.id, 'username': data.username} for data in users]
+
+    users = await add_users(user_id=message.chat.id, users=users)
+    if not users:
+        await client.send_message(
+            message.chat.id, 'У вас недостаточно прав для добавления '
+                             'пользователей или вы ошиблись при вводе '
+                             'данных пользователей, пожалуйста добавляйте '
+                             'пользовательские id через запятую с пробелом, '
+                             'пользовательские id должны быть числами!'
+        )
+    else:
+        await client.send_message(
+            message.chat.id, f'Пользователи {users} успешно добавлены.'
+        )
 
 
 async def del_admin(client, message):
@@ -30,18 +49,7 @@ async def auto_generate_report(client, message):
 
 
 async def generate_report(client, message):
-    chat = ChatUserInfo(client, 'telestat_team')
-    parse_info = {
-        'Название канала/группы': chat.group_name,
-        'Дата и время отчета': datetime.now().strftime("%d-%m-%Y %H:%M:%S"),
-        'Количество подписчиков': await chat.get_chat_members_count(),
-        'Полная информация о пользователях': await chat.get_full_user_info()
-    }
-    # messages = await chat.get_chat_messages()
-    # for message in messages:
-    #     print(message)
-    print(parse_info)
-    await client.send_message(message.chat.id, 'Данные сформированы в словарь')
+    await client.send_message(message.chat.id, '...Формирование отчёта...')
 
 
 async def scheduling(client, message):
