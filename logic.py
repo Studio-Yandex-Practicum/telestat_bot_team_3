@@ -1,6 +1,6 @@
 from datetime import datetime
 
-from service.telegram_service import ChatUserInfo
+from services.telegram_service import ChatUserInfo
 
 
 async def add_admin(client, message):
