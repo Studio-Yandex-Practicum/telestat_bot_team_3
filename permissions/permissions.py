@@ -7,7 +7,7 @@ async def check_authorization(username=None, is_superuser=False):
 
     if username is None:
         return False
-    print(username)
+
     async with engine.connect() as session:
         db = await userstg_crud.get_by_attr(
             'username',

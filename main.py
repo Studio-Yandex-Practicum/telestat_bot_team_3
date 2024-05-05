@@ -19,8 +19,7 @@ logger = configure_logging()
 #         await conn.run_sync(Base.metadata.drop_all)
 #         await conn.run_sync(Base.metadata.create_all)
 
-# asyncio.run(init_models())
 
-
-asyncio.run(bot_1.run())
-# asyncio.run(bot_2.run())
+loop = asyncio.get_event_loop()
+loop.run_until_complete(init_process())
+loop.run_forever(bot_1.run())

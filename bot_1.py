@@ -19,6 +19,7 @@ class Commands(Enum):
     del_admin = 'Удалить администратора'
     choise_channel = 'Выбрать телеграм канал'
     set_period = 'Установить период сбора данных'
+    run_collect_analitics = 'Начать сбор аналитики'
 
 
 logger = configure_logging()
@@ -60,7 +61,7 @@ async def command_start(
         ):
             """Обработчик команд админки бота №1."""
 
-            if message.text == 'Начать сбор аналитики':
+            if message.text == Commands.run_collect_analitics.value:
                 logger.info('Бот начал работу')
                 await generate_report(client, message)
 
@@ -77,10 +78,8 @@ async def command_start(
                 await choise_channel(client, message)
 
             elif message.text == Commands.set_period.value:
-                logger.info('Устананвливаем период сбора данных')
+                logger.info('Устананавливаем период сбора данных')
                 await set_period(client, message)
-
-        await collect_analitycs(client, message)
 
 
 if __name__ == '__main__':

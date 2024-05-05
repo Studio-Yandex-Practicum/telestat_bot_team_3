@@ -1,5 +1,6 @@
 # IDE
 .idea
+.vscode
 
 # Byte-compiled / optimized / DLL files
 core/__pycache__/
@@ -23,7 +24,7 @@ venv.bak/
 *.session
 
 # Logging
-*.logs
+*.log
 logs/
 
 # alembic
