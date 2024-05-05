@@ -55,7 +55,6 @@ async def command_start(
             if message.text == Commands.add_admin.value:
                 logger.info('Добавляем администратора')
                 await add_admin(client, message)
-
             elif message.text == Commands.del_admin.value:
                 logger.info('Удаляем администратора')
                 await del_admin(client, message)
@@ -71,8 +70,6 @@ async def command_start(
             elif message.text == Commands.scheduling.value:
                 logger.info('Формирование графика')
                 await scheduling(client, message)
-
-        await report_generation(client, message)
 
 
 if __name__ == '__main__':

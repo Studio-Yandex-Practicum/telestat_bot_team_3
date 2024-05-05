@@ -1,4 +1,5 @@
 from pyrogram.types import ReplyKeyboardMarkup, KeyboardButton
+from pyrogram.types import InlineKeyboardMarkup, InlineKeyboardButton
 
 
 bot_1_keyboard = ReplyKeyboardMarkup(keyboard=[
@@ -13,8 +14,6 @@ bot_1_keyboard = ReplyKeyboardMarkup(keyboard=[
     [
         KeyboardButton(text='Начать сбор аналитики')
     ]
-
-
 ], resize_keyboard=True)
 
 
