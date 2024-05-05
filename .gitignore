@@ -24,7 +24,7 @@ venv.bak/
 *.session
 
 # Logging
-*.logs
+*.log
 logs/
 
 # alembic

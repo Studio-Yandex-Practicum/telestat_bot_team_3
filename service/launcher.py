@@ -89,7 +89,7 @@ async def get_superuser():
             attr_value=True,
             session=session
         )
-    return superuser  #  ('orbikadm', None, True, True, True, 1)
+    return superuser
 
 
 async def create_superuser(username=None):
