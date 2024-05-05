@@ -1,8 +1,27 @@
+from service.telegram_service import add_users
+
 
 async def add_admin(client, message):
+    """Добавление администратора(ов) в ДБ."""
+
     await client.send_message(
-        message.chat.id, '...Добавление администратора...'
+        message.chat.id, f'{message.text}...Добавление администратора...'
     )
+
+    # @bot.on_message(filter)
+    users = await add_users(user_id=message.chat.id, users_ids=message.text)
+    if not users:
+        await client.send_message(
+            message.chat.id, 'У вас недостаточно прав для добавления '
+                             'пользователей или вы ошиблись при вводе '
+                             'данных пользователей, пожалуйста добавляйте '
+                             'пользовательские id через запятую с пробелом, '
+                             'пользовательские id должны быть числами!'
+        )
+    else:
+        await client.send_message(
+            message.chat.id, f'Пользователи {users} успешно добавлены.'
+        )
 
 
 async def del_admin(client, message):

@@ -11,7 +11,7 @@ from settings import Config, configure_logging
 
 
 class Commands(Enum):
-    add_users = 'Добавить администратора'
+    add_admin = 'Добавить администратора'
     del_admin = 'Удалить администратора'
     choise_channel = 'Выбрать телеграм канал'
     set_period = 'Установить период сбора данных'
@@ -63,21 +63,9 @@ async def command_start(
                     '...Здесь идет активный сбор данных пользователей...'
                 )
 
-            elif message.text == Commands.add_users.value:
+            elif message.text == 'Добавить администратора':
                 logger.info('Добавляем администратора')
-                users_ids = 'ываыв'
-                users = await add_users(user_id=message.chat.id, users_ids=users_ids)
-                if not users:
-                    await client.send_message(
-                        message.chat.id, 'У вас недостаточно прав для добавления '
-                                         'пользователей или вы ошиблись при вводе'
-                                         'данных пользователей, пожалуйста добавляйте '
-                                         'пользовательские id в формате: 111222333, 222333444'
-                    )
-                else:
-                    await client.send_message(
-                        message.chat.id, f'Пользователи {users} успешно добавлены.'0
-                    )
+                await add_admin(client, message)
 
             elif message.text == Commands.del_admin.value:
                 logger.info('Удаляем администратора')
