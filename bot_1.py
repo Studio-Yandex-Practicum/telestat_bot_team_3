@@ -1,22 +1,28 @@
 from enum import Enum
+
 from pyrogram import Client, filters
 from pyrogram.types import messages_and_media
 
-from settings import configure_logging
 from buttons import bot_1_keyboard
-from logic import add_admin, del_admin, choise_channel, set_period
+from logic import add_admin, choise_channel, del_admin, set_period
+from service.telegram_service import add_users
 from permissions.permissions import check_authorization
+from settings import Config, configure_logging
 
 
 class Commands(Enum):
-    add_admin = 'Добавить администратора'
+    add_users = 'Добавить администратора'
     del_admin = 'Удалить администратора'
     choise_channel = 'Выбрать телеграм канал'
     set_period = 'Установить период сбора данных'
 
 
 logger = configure_logging()
-bot_1 = Client("my_account")
+bot_1 = Client(
+    "my_account",
+    api_id=Config.API_ID,
+    api_hash=Config.API_HASH,
+    bot_token=Config.BOT_TOKEN)
 
 
 @bot_1.on_message(filters.command('start'))
@@ -28,7 +34,7 @@ async def command_start(
 
     logger.info('Проверка на авторизацию')
 
-    if not await check_authorization(message.chat.username):
+    if not await check_authorization(message.chat.id, message.chat.username):
         await client.send_message(
             message.chat.id,
             'Управлять ботом могут только Администраторы.'
@@ -40,6 +46,7 @@ async def command_start(
             'Вы прошли авторизацию!',
             reply_markup=bot_1_keyboard
         )
+        print(message)
         logger.debug(f'{message.chat.username} авторизован!')
 
         @bot_1.on_message()
@@ -56,9 +63,18 @@ async def command_start(
                     '...Здесь идет активный сбор данных пользователей...'
                 )
 
-            elif message.text == Commands.add_admin.value:
+            elif message.text == Commands.add_users.value:
                 logger.info('Добавляем администратора')
-                await add_admin(client, message)
+                users = await add_users(user_id=message.chat.id, users_ids=message.text)
+                if not users:
+                    await client.send_message(
+                        message.chat.id, 'У вас недостаточно прав для добавление '
+                                         'пользователей.'
+                    )
+                else:
+                    await client.send_message(
+                        message.chat.id, f'Пользователи {users} успешно добавлены.'
+                    )
 
             elif message.text == Commands.del_admin.value:
                 logger.info('Удаляем администратора')
