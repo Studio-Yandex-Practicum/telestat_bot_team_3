@@ -13,19 +13,24 @@ async def add_users(user_id,
             users_ids is None):
         return False
 
-    users_ids = [{'user_id': int(user_id),
-                  'username': user_id,
-                  'is_superuser': is_superuser,
-                  'is_admin': True,
-                  'is_active': is_active
-                  } for user_id in users_ids.split(', ')]
+    users = [{'user_id': int(user_id) if user_id.isdigit() else 0,
+              'username': user_id,
+              'is_superuser': is_superuser,
+              'is_admin': True,
+              'is_active': is_active
+              } for user_id in users_ids.split(', ')]
+
+    for user in users:
+        if user['user_id'] == 0:
+            return False
 
     db = ''
     async with async_session() as session:
         async with engine.connect():
             for user_id in users_ids:
                 db += ' ' + (
-                    await userstg_crud.create(user_id, session)).username
+                    await userstg_crud.create(
+                        user_id, session)).username
     return db
 
 

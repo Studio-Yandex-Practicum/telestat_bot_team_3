@@ -65,15 +65,18 @@ async def command_start(
 
             elif message.text == Commands.add_users.value:
                 logger.info('Добавляем администратора')
-                users = await add_users(user_id=message.chat.id, users_ids=message.text)
+                users_ids = 'ываыв'
+                users = await add_users(user_id=message.chat.id, users_ids=users_ids)
                 if not users:
                     await client.send_message(
-                        message.chat.id, 'У вас недостаточно прав для добавление '
-                                         'пользователей.'
+                        message.chat.id, 'У вас недостаточно прав для добавления '
+                                         'пользователей или вы ошиблись при вводе'
+                                         'данных пользователей, пожалуйста добавляйте '
+                                         'пользовательские id в формате: 111222333, 222333444'
                     )
                 else:
                     await client.send_message(
-                        message.chat.id, f'Пользователи {users} успешно добавлены.'
+                        message.chat.id, f'Пользователи {users} успешно добавлены.'0
                     )
 
             elif message.text == Commands.del_admin.value:
