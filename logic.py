@@ -1,3 +1,5 @@
+from datetime import datetime
+
 from service.telegram_service import ChatUserInfo
 
 
@@ -28,9 +30,18 @@ async def auto_generate_report(client, message):
 
 
 async def generate_report(client, message):
-    chat = ChatUserInfo(client, 'telestat_team')
-    print(await chat.get_chat())
-    await client.send_message(message.chat.id, 'len(await chat.get_chat_messages())')
+    chat = ChatUserInfo(client, 'vag_angar')
+    parse_info = {
+        'Название канала/группы': chat.group_name,
+        'Дата и время отчета': datetime.now().strftime("%d-%m-%Y %H:%M:%S"),
+        'Количество подписчиков': await chat.get_chat_members_count(),
+        'Полная информация о пользователях': await chat.get_full_user_info()
+    }
+    # messages = await chat.get_chat_messages()
+    # for message in messages:
+    #     print(message)
+    print(parse_info)
+    await client.send_message(message.chat.id, 'Данные сформированы в словарь')
 
 
 async def scheduling(client, message):

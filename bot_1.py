@@ -4,7 +4,13 @@ from pyrogram.types import messages_and_media
 
 from settings import Config, configure_logging
 from buttons import bot_1_keyboard
-from logic import add_admin, del_admin, choise_channel, generate_report, set_period
+from logic import (
+    add_admin,
+    del_admin,
+    choise_channel,
+    generate_report,
+    set_period
+)
 from permissions.permissions import check_authorization
 
 
@@ -78,4 +84,5 @@ async def command_start(
 
 
 if __name__ == '__main__':
+    logger.info(' Бот запущен')
     bot_1.run()

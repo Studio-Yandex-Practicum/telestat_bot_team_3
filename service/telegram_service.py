@@ -29,7 +29,7 @@ class ChatUserInfo():
         """Метод получения списка подписчиков канала/группы"""
         subsribers = []
         async for subscriber in self.bot.get_chat_members(self.group_name):
-            subsribers.append(subscriber.user.username)
+            subsribers.append(subscriber)
         logger.info(subscriber)
         return subsribers
 
@@ -49,13 +49,34 @@ class ChatUserInfo():
         logger.info(f'Информация об {chat_member.user.username} получена')
         return chat_member
 
-    # async def get_chat_messages(self):
-    #     """Возвращает последние 200 сообщений"""
-    #     last_messages = await self.bot.get_messages(self.group_name)
-    #     logger.info(
-    #         f'Получены последние 200 сообщений из группы {self.group_name}'
-    #     )
-    #     return last_messages
+    async def get_full_user_info(self):
+        """Формирует список словарей, в которых вся информация о подписчиках"""
+        users_info = []
+        for user in await self.get_chat_users():
+            full_user_info = {}
+            full_user_info['ID'] = user.user.id
+            full_user_info['Username'] = user.user.username
+            full_user_info['Имя'] = user.user.first_name
+            full_user_info['Язык пользователя'] = user.user.language_code
+            try:
+                full_user_info['Дата вступления'] = user.join_date
+            except AttributeError:
+                full_user_info['Дата вступления'] = 'Отсутствует для владельца'
+            full_user_info['Статус подписчика'] = user.status
+            full_user_info['Это бот ?'] = 'Да' if user.user.is_bot else 'Нет'
+            users_info.append(full_user_info)
+        logger.info('Информация по каждому подписчику собрана')
+        return users_info
+
+    async def get_chat_messages(self):
+        """Возвращает последние 200 сообщений"""
+        last_messages = []
+        async for message in self.bot.get_chat_history(self.group_name):
+            last_messages.append(message.text)
+        logger.info(
+            f'Получены последние 200 сообщений из группы {self.group_name}'
+        )
+        return last_messages
 
 
 async def add_users(username, users=None):
