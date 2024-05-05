@@ -2,9 +2,15 @@ from enum import Enum
 from pyrogram import Client, filters
 from pyrogram.types import messages_and_media
 
-from settings import configure_logging
+from settings import Config, configure_logging
 from buttons import bot_1_keyboard
-from logic import add_admin, del_admin, choise_channel, set_period
+from logic import (
+    add_admin,
+    del_admin,
+    choise_channel,
+    generate_report,
+    set_period
+)
 from permissions.permissions import check_authorization
 
 
@@ -16,7 +22,12 @@ class Commands(Enum):
 
 
 logger = configure_logging()
-bot_1 = Client("my_account")
+bot_1 = Client(
+    "my_account",
+    api_hash=Config.API_HASH,
+    api_id=Config.API_ID,
+    bot_token=Config.BOT_TOKEN
+)
 
 
 @bot_1.on_message(filters.command('start'))
@@ -51,10 +62,7 @@ async def command_start(
 
             if message.text == 'Начать сбор аналитики':
                 logger.info('Бот начал работу')
-                await client.send_message(
-                    message.chat.id,
-                    '...Здесь идет активный сбор данных пользователей...'
-                )
+                await generate_report(client, message)
 
             elif message.text == Commands.add_admin.value:
                 logger.info('Добавляем администратора')
@@ -76,4 +84,5 @@ async def command_start(
 
 
 if __name__ == '__main__':
+    logger.info(' Бот запущен')
     bot_1.run()
