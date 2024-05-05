@@ -30,7 +30,7 @@ async def auto_generate_report(client, message):
 
 
 async def generate_report(client, message):
-    chat = ChatUserInfo(client, 'vag_angar')
+    chat = ChatUserInfo(client, 'telestat_team')
     parse_info = {
         'Название канала/группы': chat.group_name,
         'Дата и время отчета': datetime.now().strftime("%d-%m-%Y %H:%M:%S"),
