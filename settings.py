@@ -16,6 +16,19 @@ class Config(object):
     API_HASH = os.environ['API_HASH']
     BOT_TOKEN = os.environ['BOT_TOKEN']
 
+    # Конфигурация для гугл таблиц
+    TYPE = os.environ['TYPE']
+    PROJECT_ID = os.environ['PROJECT_ID']
+    PRIVATE_KEY_ID = os.environ['PRIVATE_KEY_ID']
+    PRIVATE_KEY = os.environ['PRIVATE_KEY']
+    CLIENT_EMAIL = os.environ['CLIENT_EMAIL']
+    CLIENT_ID = os.environ['CLIENT_ID']
+    AUTH_URI = os.environ['AUTH_URI']
+    TOKEN_URI = os.environ['TOKEN_URI']
+    AUTH_PROVIDER_X509_CERT_URL = os.environ['AUTH_PROVIDER_X509_CERT_URL']
+    CLIENT_X509_CERT_URL = os.environ['CLIENT_X509_CERT_URL']
+    EMAIL = os.environ['EMAIL']
+
 
 def configure_logging() -> Logger:
     """
