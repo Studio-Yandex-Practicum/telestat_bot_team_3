@@ -13,7 +13,12 @@ async def add_users(user_id,
             users_ids is None):
         return False
 
-    users_ids = [{'user_id': int(user_id), 'username': user_id, 'is_superuser': is_superuser, 'is_admin': True, 'is_active': is_active} for user_id in users_ids.split(', ')]
+    users_ids = [{'user_id': int(user_id),
+                  'username': user_id,
+                  'is_superuser': is_superuser,
+                  'is_admin': True,
+                  'is_active': is_active
+                  } for user_id in users_ids.split(', ')]
 
     db = ''
     async with async_session() as session:
