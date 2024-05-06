@@ -14,7 +14,10 @@ bot_1_keyboard = ReplyKeyboardMarkup(keyboard=[
     [
         KeyboardButton(text='generate_report')
     ]
-], resize_keyboard=True)
+], resize_keyboard=True,
+   placeholder='add_admin @username1, @username2, @... , del_admin @username, '
+               'choise_channel, set_period, generate_report'
+)
 
 
 bot_2_keyboard = ReplyKeyboardMarkup(keyboard=[
