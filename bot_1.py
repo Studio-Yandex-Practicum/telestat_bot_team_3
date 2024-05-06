@@ -12,7 +12,7 @@ from buttons import bot_1_keyboard
 #     set_period
 # )
 from permissions.permissions import check_authorization
-from services.telegram_service import add_users
+from services.telegram_service import add_users, ChatUserInfo
 from settings import Config, configure_logging
 
 
@@ -112,7 +112,9 @@ async def generate_report(
 ):
     """Отправляет отчёт."""
 
+    chat = ChatUserInfo(bot_1, 'telestat_team')
     logger.info('Бот начал работу')
+    await client.send_message(message.chat.id, await chat.get_chat_messages())
 
 
 @bot_1.on_message(filters.regex(Commands.choise_channel.value))

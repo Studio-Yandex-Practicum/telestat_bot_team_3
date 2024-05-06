@@ -4,7 +4,7 @@ from core.db import async_session, engine
 from crud.userstg import userstg_crud
 from permissions.permissions import check_authorization
 from settings import configure_logging
-from assistants.assistants import check_by_attr
+from assistants.assistants import check_by_attr, spy_bot, user_bot
 
 logger = configure_logging()
 
@@ -69,10 +69,11 @@ class ChatUserInfo():
         logger.info('Информация по каждому подписчику собрана')
         return users_info
 
+    @spy_bot
     async def get_chat_messages(self):
         """Возвращает последние 200 сообщений"""
         last_messages = []
-        async for message in self.bot.get_chat_history(self.group_name):
+        async for message in user_bot.get_chat_history(self.group_name):
             last_messages.append(message.text)
         logger.info(
             f'Получены последние 200 сообщений из группы {self.group_name}'
