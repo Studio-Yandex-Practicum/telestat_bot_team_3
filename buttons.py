@@ -30,10 +30,3 @@ bot_2_keyboard = ReplyKeyboardMarkup(keyboard=[
         KeyboardButton(text='Формирование графика')
     ]
 ], resize_keyboard=True)
-
-add_users_key = InlineKeyboardMarkup(
-            [
-                [InlineKeyboardButton(
-                    'Введите пользователей для добавления в базу',
-                    callback_data='callback_data')]
-            ])
