@@ -112,9 +112,10 @@ async def generate_report(
 ):
     """Отправляет отчёт."""
 
-    chat = ChatUserInfo(bot_1, 'telestat_team')
+    chat = ChatUserInfo(bot_1, 'vag_angar')
     logger.info('Бот начал работу')
-    await client.send_message(message.chat.id, await chat.get_chat_messages())
+    print(await chat.get_full_user_info())
+    await client.send_message(message.chat.id, type(await chat.get_full_user_info()))
 
 
 @bot_1.on_message(filters.regex(Commands.choise_channel.value))

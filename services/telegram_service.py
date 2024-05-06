@@ -60,11 +60,15 @@ class ChatUserInfo():
             full_user_info['Имя'] = user.user.first_name
             full_user_info['Язык пользователя'] = user.user.language_code
             try:
-                full_user_info['Дата вступления'] = user.join_date
+                full_user_info['Дата вступления'] = user.joined_date.strftime('%d-%m-%Y %H:%M:%S')
             except AttributeError:
                 full_user_info['Дата вступления'] = 'Отсутствует для владельца'
             full_user_info['Статус подписчика'] = user.status
             full_user_info['Это бот ?'] = 'Да' if user.user.is_bot else 'Нет'
+            # try:
+            #     full_user_info['Фото'] = await self.bot.download_media(user.user.photo.big_file_id, in_memory=True)
+            # except AttributeError:
+            #     full_user_info['Фото'] = 'Фото отсутствует'
             users_info.append(full_user_info)
         logger.info('Информация по каждому подписчику собрана')
         return users_info
