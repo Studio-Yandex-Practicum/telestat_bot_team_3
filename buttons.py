@@ -4,15 +4,15 @@ from pyrogram.types import InlineKeyboardMarkup, InlineKeyboardButton
 
 bot_1_keyboard = ReplyKeyboardMarkup(keyboard=[
     [
-        KeyboardButton(text='Добавить администратора'),
-        KeyboardButton(text='Удалить администратора'),
+        KeyboardButton(text='add_admin'),
+        KeyboardButton(text='del_admin'),
     ],
     [
-        KeyboardButton(text='Выбрать телеграм канал'),
-        KeyboardButton(text='Установить период сбора данных'),
+        KeyboardButton(text='choise_channel'),
+        KeyboardButton(text='set_period'),
     ],
     [
-        KeyboardButton(text='Начать сбор аналитики')
+        KeyboardButton(text='generate_report')
     ]
 ], resize_keyboard=True)
 
