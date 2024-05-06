@@ -4,6 +4,7 @@ from core.db import async_session, engine
 from crud.userstg import userstg_crud
 from permissions.permissions import check_authorization
 from settings import configure_logging
+from assistants.assistants import check_by_attr
 
 logger = configure_logging()
 
@@ -79,13 +80,34 @@ class ChatUserInfo():
         return last_messages
 
 
-async def add_users(username, users=None):
+async def add_users(user_id: int,
+                    users: list[dict] = None,
+                    is_superuser: bool = False,
+                    is_admin: bool = True,
+                    is_active: bool = True
+                    ):
     """Добавление пользователей в ДБ."""
 
-    if not await check_authorization(username, True) or users is None:
+    if not await check_authorization(user_id, True) or users is None:
         return False
 
-    users = [{'username': user, 'is_superuser': is_superuser, 'is_admin': True, 'is_active': is_active} for user in users.split(', ')]
+    for user in users:
+        async with async_session() as session:
+            async with engine.connect():
+                if await check_by_attr(
+                        'user_id',
+                        user['user_id'],
+                        session
+                        ):
+                    return False
+
+    users = [{
+        'user_id': user['user_id'],
+        'username': user['username'],
+        'is_superuser': is_superuser,
+        'is_admin': is_admin,
+        'is_active': is_active
+        } for user in users]
 
     db = ''
     async with async_session() as session:
@@ -97,4 +119,5 @@ async def add_users(username, users=None):
 
 async def del_users():
     """Установка пользователя из ДБ."""
+
     pass
