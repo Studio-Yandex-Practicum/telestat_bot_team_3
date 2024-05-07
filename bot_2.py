@@ -62,7 +62,19 @@ async def command_start(
             elif message.text == Commands.auto_report.value:
                 logger.info('Автоматическое формирование отчёта')
                 await auto_generate_report(client, message)
+            ========================
+            @bot_1.on_message(filters.regex(Commands.generate_report.value))
+            async def generate_report(
+                client: Client,
+                message: messages_and_media.message.Message
+            ):
+                """Отправляет отчёт."""
 
+                chat = ChatUserInfo(bot_1, 'vag_angar')
+                logger.info('Бот начал работу')
+                print(await chat.get_full_user_info())
+                await client.send_message(message.chat.id, type(await chat.get_full_user_info()))
+            ========================
             elif message.text == Commands.generate_report.value:
                 logger.info('Формирование отчёта')
                 await generate_report(client, message)
