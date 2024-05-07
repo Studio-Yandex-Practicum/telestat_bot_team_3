@@ -72,8 +72,18 @@ async def command_del_admin(
     """Блокирует администраторов бота в ДБ."""
 
     logger.info('Блокируем администратора бота')
-    if await is_admin(client, message):
-        await del_admin(client, message)
+
+
+@bot_1.on_message(filters.regex(Commands.generate_report.value))
+async def generate_report(
+    client: Client,
+    message: messages_and_media.message.Message
+):
+    """Отправляет отчёт."""
+
+    chat = ChatUserInfo(bot_1, 'rubiconbittt')
+    logger.info('Бот начал работу')
+    await client.send_message(message.chat.id, len(await chat.get_chat_messages()))
 
 
 @bot_1.on_message(filters.regex(Commands.choise_channel.value))
