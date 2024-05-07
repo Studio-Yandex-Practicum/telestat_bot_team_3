@@ -76,7 +76,6 @@ async def command_del_admin(
         await del_admin(client, message)
 
 
-
 @bot_1.on_message(filters.regex(Commands.choise_channel.value))
 async def choise_channel_cmd(
     client: Client,

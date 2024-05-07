@@ -13,17 +13,29 @@ async def manage_admin(client, message, action: Literal['add', 'del']):
             'split_str': 'add_admin ',
             'msg_str': 'добавления',
             'done_msg_str': 'добавлены',
+            'cmd_msg_str': 'Добавить администратора',
 
         },
         'del': {
             'split_str': 'del_admin ',
             'msg_str': 'удаления',
-            'done_msg_str': 'удалены'
+            'done_msg_str': 'удалены',
+            'cmd_msg_str': 'Удалить администратора',
         },
     }
     # users_str = '@Maks_insurance, @jzx659, @XSteelHunterX'
     # users_str = 'sdfsdf'
-    users = message.text.split(action_values[action]['split_str'])
+    delimiter = action_values[action]['split_str']
+    if not message.text.startswith(delimiter):
+        await client.send_message(
+            message.chat.id,
+            f'Сообщение должно начинатьтся с команды {delimiter}.\n'
+            f'Формат сообщения: \n{delimiter} @username1, @username2\n'
+            'После написания команды необходимо нажать кнопку '
+            f'{action_values[action]["cmd_msg_str"]}'
+        )
+        return
+    users = message.text.split(delimiter)
     users = await client.get_users(users[1].split(', '))
     users = [{
         'user_id': data.id,
@@ -64,15 +76,10 @@ async def is_admin(client, message):
 
 async def add_admin(client, message):
     """Добавление администратора(ов) в ДБ."""
-
-    await client.send_message(
-        message.chat.id, '...Добавление администратора...'
-    )
     await manage_admin(client, message, action='add')
 
 
 async def del_admin(client, message):
-    await client.send_message(message.chat.id, '...Удаляем администратора...')
     await manage_admin(client, message, action='del')
 
 
