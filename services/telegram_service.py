@@ -4,7 +4,7 @@ from core.db import async_session, engine
 from crud.userstg import userstg_crud
 from permissions.permissions import check_authorization
 from settings import configure_logging
-from assistants.assistants import check_by_attr
+from assistants.assistants import check_by_attr, spy_bot, user_bot
 
 logger = configure_logging()
 
@@ -60,19 +60,24 @@ class ChatUserInfo():
             full_user_info['Имя'] = user.user.first_name
             full_user_info['Язык пользователя'] = user.user.language_code
             try:
-                full_user_info['Дата вступления'] = user.join_date
+                full_user_info['Дата вступления'] = user.joined_date.strftime('%d-%m-%Y %H:%M:%S')
             except AttributeError:
                 full_user_info['Дата вступления'] = 'Отсутствует для владельца'
             full_user_info['Статус подписчика'] = user.status
             full_user_info['Это бот ?'] = 'Да' if user.user.is_bot else 'Нет'
+            # try:
+            #     full_user_info['Фото'] = await self.bot.download_media(user.user.photo.big_file_id, in_memory=True)
+            # except AttributeError:
+            #     full_user_info['Фото'] = 'Фото отсутствует'
             users_info.append(full_user_info)
         logger.info('Информация по каждому подписчику собрана')
         return users_info
 
+    @spy_bot
     async def get_chat_messages(self):
         """Возвращает последние 200 сообщений"""
         last_messages = []
-        async for message in self.bot.get_chat_history(self.group_name):
+        async for message in user_bot.get_chat_history(self.group_name):
             last_messages.append(message.text)
         logger.info(
             f'Получены последние 200 сообщений из группы {self.group_name}'
