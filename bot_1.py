@@ -112,10 +112,9 @@ async def generate_report(
 ):
     """Отправляет отчёт."""
 
-    chat = ChatUserInfo(bot_1, 'vag_angar')
+    chat = ChatUserInfo(bot_1, 'rubiconbittt')
     logger.info('Бот начал работу')
-    print(await chat.get_full_user_info())
-    await client.send_message(message.chat.id, type(await chat.get_full_user_info()))
+    await client.send_message(message.chat.id, len(await chat.get_chat_messages()))
 
 
 @bot_1.on_message(filters.regex(Commands.choise_channel.value))

@@ -78,11 +78,41 @@ class ChatUserInfo():
         """Возвращает последние 200 сообщений"""
         last_messages = []
         async for message in user_bot.get_chat_history(self.group_name):
-            last_messages.append(message.text)
+            last_messages.append(message)
         logger.info(
             f'Получены последние 200 сообщений из группы {self.group_name}'
         )
         return last_messages
+
+    async def get_activity(self):
+        """Возвращает среднее количество просмотров/реакций/репостов"""
+        reactions = []
+        views = []
+        forwards = []
+        for activity in await self.get_chat_messages():
+            if activity.reactions:
+                print(activity.reactions.reactions)
+                for reaction in activity.reactions.reactions:
+                    logger.info(f'{reaction}')
+                    try:
+                        reactions.append(reaction.count)
+                    except AttributeError:
+                        pass
+            try:
+                forwards.append(activity.forwards)
+            except AttributeError:
+                pass
+            try:
+                views.append(activity.views)
+            except AttributeError:
+                pass
+        logger.info(f'{views, reactions, forwards}')
+        avg_results = {
+            'views': sum(views) / len(views),
+            'reactions': sum(reactions) / len(reactions),
+            'forwards': sum(forwards) / len(forwards)
+        }
+        return avg_results
 
 
 async def add_users(user_id: int,
