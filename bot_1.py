@@ -12,6 +12,7 @@ from logic import (
     set_period,
     is_admin
 )
+from services.telegram_service import ChatUserInfo
 from settings import Config, configure_logging
 
 
@@ -74,16 +75,18 @@ async def command_del_admin(
     logger.info('Блокируем администратора бота')
 
 
-@bot_1.on_message(filters.regex(Commands.generate_report.value))
+@bot_1.on_message(filters.regex(Commands.run_collect_analitics.value))
 async def generate_report(
     client: Client,
     message: messages_and_media.message.Message
 ):
     """Отправляет отчёт."""
 
-    chat = ChatUserInfo(bot_1, 'rubiconbittt')
+    chat = ChatUserInfo(bot_1, 'vag_angar')
     logger.info('Бот начал работу')
-    await client.send_message(message.chat.id, len(await chat.get_chat_messages()))
+    info = await chat.create_report()
+    print(info)
+    await client.send_message(message.chat.id, len(info))
 
 
 @bot_1.on_message(filters.regex(Commands.choise_channel.value))

@@ -105,8 +105,8 @@ async def auto_generate_report(client, message, bot_1):
     )
     chat = ChatUserInfo(bot_1, 'vag_angar')
     logger.info('Бот начал работу')
-    print(await chat.get_full_user_info())
-    await client.send_message(message.chat.id, type(await chat.get_full_user_info()))
+    print(await chat.create_report())
+    await client.send_message(message.chat.id, type(await chat.create_report()))
 
 
 async def generate_report(client, message):
