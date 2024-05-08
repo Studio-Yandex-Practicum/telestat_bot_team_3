@@ -57,6 +57,7 @@ class ChatUserInfo():
         report_data.append({
             'Активности канала': users_activity
         })
+        users_info = []
         for user in await self.get_chat_users():
             full_user_info = {}
             full_user_info['ID'] = user.user.id
@@ -75,7 +76,10 @@ class ChatUserInfo():
                 full_user_info['ID Фото'] = user.user.photo.big_file_id
             except AttributeError:
                 full_user_info['Фото'] = 'Фото отсутствует'
-            report_data.append(full_user_info)
+            users_info.append(full_user_info)
+        report_data.append({
+            'Подписчики': users_info
+        })
         logger.info('Информация по каждому подписчику собрана')
         return report_data
 
