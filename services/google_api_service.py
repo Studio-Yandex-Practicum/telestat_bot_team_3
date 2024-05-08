@@ -1,4 +1,4 @@
-from datetime import datetime, timedelta
+from datetime import datetime
 import os
 
 from dotenv import load_dotenv
@@ -8,6 +8,13 @@ from aiogoogle.auth.creds import ServiceAccountCreds
 # времянка для тестов
 load_dotenv('.env')
 # from settings import Config
+
+FORMAT = '%Y/%m/%d-%H:%M:%S'
+ROW_COUNT = 1000
+COLUMN_COUNT = 12
+SHEETS_VER = 'v4'
+DRIVE_VER = 'v3'
+TABLE_RANGE = 'A1:L999'
 
 SCOPES = [
     'https://www.googleapis.com/auth/spreadsheets',
@@ -31,18 +38,6 @@ INFO = {
 cred = ServiceAccountCreds(scopes=SCOPES, **INFO)
 
 
-# async def get_service():
-#     async with Aiogoogle(service_account_creds=cred) as aiogoogle:
-#         yield aiogoogle
-
-
-FORMAT = '%Y/%m/%d %H:%M:%S'
-ROW_COUNT = 1000
-COLUMN_COUNT = 11
-SHEETS_VER = 'v4'
-DRIVE_VER = 'v3'
-TABLE_RANGE = 'A1:L999'
-
 async def get_spreadsheets_id(wrapper_services: Aiogoogle, name: str):
     service = await wrapper_services.discover('drive', DRIVE_VER)
     spreadsheets = await wrapper_services.as_service_account(
@@ -55,32 +50,33 @@ async def get_spreadsheets_id(wrapper_services: Aiogoogle, name: str):
     elif len(spreadsheets['files']) == 0:
         return None
     
-async def delete_all_files_by_name(wrapper_services: Aiogoogle, name: str):
+async def delete_all_files_by_name(wrapper_services: Aiogoogle, chanal_name: str):
     """
     Служебная функция для удаления всех файлов имеющих определенное название. 
     Нужна чтоы удалять файлы, которые были созданы, но не видны у собственника аккаунта google
     """
     service = await wrapper_services.discover('drive', DRIVE_VER)
     spreadsheets = await wrapper_services.as_service_account(
-        service.files.list(q=f"name = '{name}'")
+        service.files.list(q=f"name = '{chanal_name}'")
     )
     for item in spreadsheets['files']:
         await wrapper_services.as_service_account(
         service.files.delete(fileId=item['id'])
     )
-    print("Операция завершена")
+    print(f"All files with name {chanal_name} delete.")
 
 
 
-async def spreadsheets_create(wrapper_services: Aiogoogle, name: str) -> str:
+async def spreadsheets_create(wrapper_services: Aiogoogle, chanal_name: str) -> str:
     now_date_time = datetime.now().strftime(FORMAT)
     service = await wrapper_services.discover('sheets', SHEETS_VER)
+    sheet_title = f'report_{now_date_time}'
     spreadsheet_body = {
-        'properties': {'title': f'{name}',
+        'properties': {'title': f'{chanal_name}',
                        'locale': 'ru_RU'},
         'sheets': [{'properties': {'sheetType': 'GRID',
                                    'sheetId': 0,
-                                   'title': f'Отчёт на {now_date_time}',
+                                   'title': sheet_title,
                                    'gridProperties': {'rowCount': ROW_COUNT,
                                                       'columnCount': COLUMN_COUNT}}}]
     }
@@ -88,7 +84,37 @@ async def spreadsheets_create(wrapper_services: Aiogoogle, name: str) -> str:
         service.spreadsheets.create(json=spreadsheet_body)
     )
     spreadsheetid = response['spreadsheetId']
-    return spreadsheetid
+    return spreadsheetid, sheet_title
+
+
+async def spreadsheets_create_new_list(wrapper_services: Aiogoogle, spreadsheetid: str):
+    now_date_time = datetime.now().strftime(FORMAT)
+    service = await wrapper_services.discover('sheets', SHEETS_VER)
+    sheet_title = f'report_{now_date_time}'
+    spreadsheet_body = {
+        'requests': [
+            {
+                'addSheet': {
+                    'properties': {
+                        'title': sheet_title,
+                        'gridProperties': {
+                            'rowCount': ROW_COUNT,
+                            'columnCount': COLUMN_COUNT
+                        }
+                    }
+                }
+            }
+        ]
+    }
+    response = await wrapper_services.as_service_account(
+        service.spreadsheets.batchUpdate(
+            spreadsheetId = spreadsheetid,
+            json=spreadsheet_body
+        )
+    )
+
+    return sheet_title
+
 
 
 async def set_user_permissions(
@@ -109,6 +135,7 @@ async def set_user_permissions(
 
 async def spreadsheets_update_value(
         spreadsheetid: str,
+        sheet_title: str,
         data: list[dict],
         wrapper_services: Aiogoogle
 ) -> None:
@@ -137,14 +164,18 @@ async def spreadsheets_update_value(
         table_values.append(new_row)
 
     update_body = {
-        'majorDimension': 'ROWS',
-        'values': table_values
+        "valueInputOption": "USER_ENTERED",
+        "data": [
+            {
+                "range": f'{sheet_title}!{TABLE_RANGE}',
+                "majorDimension": "ROWS",
+                "values": table_values
+            }
+        ]
     }
     await wrapper_services.as_service_account(
-        service.spreadsheets.values.update(
+        service.spreadsheets.values.batchUpdate(
             spreadsheetId=spreadsheetid,
-            range=TABLE_RANGE,
-            valueInputOption='USER_ENTERED',
             json=update_body
         )
     )
@@ -155,15 +186,21 @@ async def get_report(
 ):
     """Создание отчета в Google spreadsheets."""
     async with Aiogoogle(service_account_creds=cred) as aiogoogle:
-        for name, item in data.items():
-            # await delete_all_files_by_name(aiogoogle, name) # Не забыть удалить
-            spreadsheetid = await get_spreadsheets_id(aiogoogle, name)
+        for chanal_name, data in data.items():
+            # await delete_all_files_by_name(aiogoogle, name) # TODO Не забыть удалить
+            spreadsheetid = await get_spreadsheets_id(aiogoogle, chanal_name)
             if spreadsheetid is None:
-                spreadsheetid = await spreadsheets_create(aiogoogle, name)
-            await set_user_permissions(spreadsheetid, aiogoogle)
+                spreadsheetid, sheet_title = await spreadsheets_create(aiogoogle, chanal_name)
+                await set_user_permissions(spreadsheetid, aiogoogle)
+                print(f'Create spreadsheet {spreadsheetid} with sheet {sheet_title}')
+            else:
+                sheet_title = await spreadsheets_create_new_list(aiogoogle, spreadsheetid)
+                print(f'Create sheet {sheet_title} in spreadsheet {spreadsheetid}')
             await spreadsheets_update_value(spreadsheetid,
-                                            item,
+                                            sheet_title,
+                                            data,
                                             aiogoogle)
+            print(f'Spreadsheet {chanal_name} is done!')
 
 if __name__ == '__main__':
     # Тестовые данные:
