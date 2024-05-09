@@ -1,8 +1,10 @@
-from services.telegram_service import add_users, ChatUserInfo
-from permissions.permissions import check_authorization
 from typing import Literal
-from settings import configure_logging
 
+from pyrogram.types import KeyboardButton, ReplyKeyboardMarkup, ReplyKeyboardRemove
+
+from permissions.permissions import check_authorization
+from services.telegram_service import ChatUserInfo, add_users, get_channels
+from settings import configure_logging
 
 logger = configure_logging()
 
@@ -53,7 +55,7 @@ async def manage_admin(client, message, action: Literal['add', 'del']):
             message.chat.id, f'У вас недостаточно прав для {action_values[action]["msg_str"]} '
                              'пользователей или вы ошиблись при вводе '
                              'данных пользователей, пожалуйста добавляйте '
-                             'пользовательские имена через запятую с пробелом.'
+                             'имена пользователей через запятую с пробелом.'
         )
         return
     else:
@@ -64,12 +66,14 @@ async def manage_admin(client, message, action: Literal['add', 'del']):
 
 
 async def is_admin(client, message):
-    if not await check_authorization(message.chat.id):
+    """Проверка авторизации."""
+
+    if not await check_authorization(message.from_user.id):
         await client.send_message(
             message.chat.id,
             'Управлять ботом могут только Администраторы.'
         )
-        logger.info(f'Неудачная авторизация {message.chat.username}!')
+        logger.info(f'Неудачная авторизация {message.from_user.username}!')
         return False
     return True
 
@@ -83,8 +87,48 @@ async def del_admin(client, message):
     await manage_admin(client, message, action='del')
 
 
-async def choise_channel(client, message):
+async def choise_channel(client, message, bot):
+    """Получение каналов и выбор неоходимого канала телеграм."""
+
     await client.send_message(message.chat.id, '...Выбираем телеграм канал...')
+    channels = await get_channels(bot)
+    print(len(channels.chats))
+    btn_1_4 = []
+    btn_many = []
+    counter = 1
+    for chat in channels.chats:
+        print(chat.username)
+        if counter > 0:
+            counter -= 1
+            btn_1_4.append(KeyboardButton(text=f'@{chat.username}'))
+        else:
+            counter = 1
+            btn_1_4.append(KeyboardButton(text=f'@{chat.username}'))
+            btn_many.append(btn_1_4)
+
+    if btn_many:
+        channels_btn = ReplyKeyboardMarkup(keyboard=[
+            btn_1_4
+        ], resize_keyboard=True)
+    else:
+        channels_btn = ReplyKeyboardMarkup(keyboard=btn_many, resize_keyboard=True)
+
+    # channels_btn = ReplyKeyboardMarkup(keyboard=[
+    #     [
+    #         KeyboardButton(text='Добавить'),
+    #         KeyboardButton(text='Удалить'),
+    #     ],
+    # ], resize_keyboard=True)
+
+
+    # await client.send_message(message.chat.id, 'Меняем клаву', reply_markup=ReplyKeyboardRemove())
+    await client.send_message(
+        message.chat.id,
+        'Выберете желаемый из своих каналов на клавиатуре.',
+        reply_markup=channels_btn
+    )
+    print(channels_btn)
+    return
 
 
 async def set_period(client, message):

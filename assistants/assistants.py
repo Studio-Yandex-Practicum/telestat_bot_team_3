@@ -7,7 +7,7 @@ from settings import Config, logger
 
 
 user_bot = Client(
-    'my_account2',
+    Config.ACCOUNT_NAME,
     api_hash=Config.API_HASH,
     api_id=Config.API_ID,
     phone_number=Config.PHONE_NUMBER

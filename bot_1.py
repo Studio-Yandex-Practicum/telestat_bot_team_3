@@ -28,7 +28,7 @@ class Commands(Enum):
 
 
 bot_1 = Client(
-    "my_account",
+    Config.ACCOUNT_NAME,
     api_hash=Config.API_HASH,
     api_id=Config.API_ID,
     bot_token=Config.BOT_TOKEN
@@ -98,7 +98,7 @@ async def choise_channel_cmd(
 
     logger.info('Выбираем телеграм канал')
     if await is_admin(client, message):
-        await choise_channel(client, message)
+        await choise_channel(client, message, bot=bot_1)
 
 
 @bot_1.on_message(filters.regex(Commands.set_period.value))
@@ -106,7 +106,7 @@ async def set_period_cmd(
     client: Client,
     message: messages_and_media.message.Message
 ):
-    """Находит все каналы владельца."""
+    """Устанавливает переиод сбора данных."""
 
     logger.info('Устананавливаем период сбора данных')
     if await is_admin(client, message):
