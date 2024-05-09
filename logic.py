@@ -91,7 +91,7 @@ async def choise_channel(client, message, bot):
     """Получение каналов и выбор неоходимого канала телеграм."""
 
     await client.send_message(message.chat.id, '...Выбираем телеграм канал...')
-    channels = await get_channels(bot)
+    channels = await get_channels()
     print(len(channels.chats))
     btn_1_4 = []
     btn_many = []

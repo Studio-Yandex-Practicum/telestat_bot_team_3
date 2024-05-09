@@ -136,9 +136,8 @@ class ChatUserInfo():
         return avg_results
 
 
-async def get_channels(
-        bot: user_bot
-        ):
+@spy_bot
+async def get_channels(bot: user_bot = user_bot):
     """Получение телеграмм каналов."""
 
     return (await bot.invoke(

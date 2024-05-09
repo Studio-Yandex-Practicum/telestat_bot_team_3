@@ -28,7 +28,7 @@ class Commands(Enum):
 
 
 bot_1 = Client(
-    Config.ACCOUNT_NAME,
+    'my_account',
     api_hash=Config.API_HASH,
     api_id=Config.API_ID,
     bot_token=Config.BOT_TOKEN
