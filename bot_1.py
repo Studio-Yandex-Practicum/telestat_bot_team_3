@@ -44,6 +44,7 @@ async def command_start(
 
     logger.info('Проверка на авторизацию')
 
+    print(bot_1_keyboard)
     if await is_admin(client, message):
         await client.send_message(
             message.chat.id,
