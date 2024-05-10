@@ -34,6 +34,7 @@ def dinamic_ceyboard(objs, attr_name, ceyboard_row=2):
         отображаться в виде названия кнопки,
     ceyboard_row - пределитель колличества кнопок на одну строку.
     """
+    logger.info('Процесс построения динамической клавиатуры запущен!')
     btn_row = []
     btn_many = []
     counter = ceyboard_row
@@ -56,6 +57,7 @@ def dinamic_ceyboard(objs, attr_name, ceyboard_row=2):
         ceyboard = ReplyKeyboardMarkup(
             keyboard=btn_many,
             resize_keyboard=True)
+    logger.info('Динамическая клавиатура сформирована успешно.')
     return ceyboard
 
 
