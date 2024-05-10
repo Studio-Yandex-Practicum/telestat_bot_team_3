@@ -82,9 +82,9 @@ async def generate_report(
 ):
     """Отправляет отчёт."""
 
-    chat = ChatUserInfo(bot_1, 'vag_angar')
+    chat = ChatUserInfo(bot_1, 'rubiconbittt')
     logger.info('Бот начал работу')
-    info = await chat.create_report()
+    info = await chat.get_chat_users()
     print(info)
     await client.send_message(message.chat.id, len(info))
 
