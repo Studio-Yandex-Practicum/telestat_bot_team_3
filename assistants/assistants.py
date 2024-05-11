@@ -14,6 +14,16 @@ user_bot = Client(
 )
 
 
+class DotNotationDict(dict):
+    """
+    Класс добавления магических атрибутов к словарю.
+    """
+
+    __getattr__ = dict.get
+    __setattr__ = dict.__setitem__
+    __delattr__ = dict.__delitem__
+
+
 async def check_by_attr(attr_name, attr_value, session) -> bool:
     """Проверка id на наличие в ДБ."""
 
@@ -39,9 +49,10 @@ def dinamic_ceyboard(objs, attr_name, ceyboard_row=2):
     btn_many = []
     counter = ceyboard_row
     for obj in objs:
+        print(dir(obj))
         counter -= 1
         btn_row.append(KeyboardButton(
-            text=obj.__getattribute__(attr_name))
+            text=getattr(obj, attr_name))
             )
         if counter == 0:
             counter = ceyboard_row

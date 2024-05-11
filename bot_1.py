@@ -3,18 +3,12 @@ from enum import Enum
 from pyrogram import Client, filters
 from pyrogram.types import messages_and_media
 
-from buttons import bot_1_keyboard
-from logic import (
-    add_admin,
-    del_admin,
-    choise_channel,
-    run_collect_analitics,
-    set_period,
-    is_admin
-)
+from assistants.assistants import dinamic_ceyboard
+from buttons import bot_1_key
+from logic import (add_admin, choise_channel, del_admin, is_admin,
+                   run_collect_analitics, set_period)
 from services.telegram_service import ChatUserInfo
 from settings import Config, configure_logging
-
 
 logger = configure_logging()
 
@@ -44,12 +38,15 @@ async def command_start(
 
     logger.info('Проверка на авторизацию')
 
-    print(bot_1_keyboard)
     if await is_admin(client, message):
         await client.send_message(
             message.chat.id,
             'Вы прошли авторизацию!',
-            reply_markup=bot_1_keyboard
+            reply_markup=dinamic_ceyboard(
+                objs=bot_1_key,
+                attr_name='key_name',
+                ceyboard_row=2
+            )
         )
         logger.debug(f'{message.chat.username} авторизован!')
 
