@@ -64,10 +64,13 @@ async def manage_admin(client, message, action: Literal['add', 'del']):
         return
 
 
-async def is_admin(client, message):
+async def is_admin(client, message, is_superuser=False):
     """Проверка авторизации."""
 
-    if not await check_authorization(message.from_user.id):
+    if not await check_authorization(
+                    message.from_user.id,
+                    is_superuser=is_superuser
+                    ):
         await client.send_message(
             message.chat.id,
             'Управлять ботом могут только Администраторы.'

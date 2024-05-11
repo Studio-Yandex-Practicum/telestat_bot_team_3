@@ -38,17 +38,29 @@ async def command_start(
 
     logger.info('Проверка на авторизацию')
 
-    if await is_admin(client, message):
+    if await is_admin(client, message, is_superuser=True):
         await client.send_message(
             message.chat.id,
-            'Вы прошли авторизацию!',
+            f'{message.chat.username} вы авторизованы как владелец!',
             reply_markup=dinamic_ceyboard(
-                objs=bot_1_key,
+                objs=bot_1_key[:3],
                 attr_name='key_name',
                 ceyboard_row=2
             )
         )
-        logger.debug(f'{message.chat.username} авторизован!')
+        logger.debug(f'{message.chat.username} авторизован как владелец!')
+    elif await is_admin(client=client, message=message):
+        print(bot_1_key[2])
+        await client.send_message(
+            message.chat.id,
+            f'{message.chat.username} вы авторизованы как администратор бота!',
+            reply_markup=dinamic_ceyboard(
+                objs=[bot_1_key[2]],
+                attr_name='key_name',
+                ceyboard_row=2
+            )
+        )
+        logger.debug(f'{message.chat.username} авторизован как администратор бота!')
 
 
 @bot_1.on_message(filters.regex(Commands.add_admin.value))
