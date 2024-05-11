@@ -6,7 +6,7 @@ from pyrogram.types import messages_and_media
 from assistants.assistants import dinamic_ceyboard
 from buttons import bot_1_key
 from logic import (add_admin, choise_channel, del_admin, is_admin,
-                   run_collect_analitics, set_period)
+                   run_collect_analitics, set_period, set_channel)
 from services.telegram_service import ChatUserInfo
 from settings import Config, configure_logging
 
@@ -121,6 +121,24 @@ async def run_collect_cmd(
     logger.info('Начинаем сбор данных')
     if await is_admin(client, message):
         await run_collect_analitics(client, message)
+
+
+@bot_1.on_message()
+async def all_incomming_messages(
+    client: Client,
+    message: messages_and_media.message.Message
+):
+    """Здесь обрабатываем все входящие сообщения."""
+
+    channels = await set_channel()
+
+    channel_name = ''
+    for channel in channels.chats:
+        if channel.username == message.text:
+            channel_name = f'@{message.text}'
+            logger.info(f'Найден канал: {channel_name}')
+            break
+
 
 
 if __name__ == '__main__':

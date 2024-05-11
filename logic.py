@@ -89,20 +89,24 @@ async def del_admin(client, message):
 async def choise_channel(client, message, bot):
     """Получение каналов и выбор неоходимого канала телеграм."""
 
-    await client.send_message(message.chat.id, '...Выбираем телеграм канал...')
     channels = await get_channels()
-    print(len(channels.chats))
 
     await client.send_message(
         message.chat.id,
-        'Выберете желаемый из своих каналов на клавиатуре.',
+        'Выберете желаемый канал на клавиатуре.',
         reply_markup=dinamic_ceyboard(
             objs=channels.chats,
             attr_name='username',
             ceyboard_row=4
             )
         )
-    return
+    return channels
+
+
+async def set_channel():
+    """Установка выбранного канала."""
+
+    return await get_channels()
 
 
 async def set_period(client, message):

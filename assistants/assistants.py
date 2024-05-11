@@ -49,7 +49,6 @@ def dinamic_ceyboard(objs, attr_name, ceyboard_row=2):
     btn_many = []
     counter = ceyboard_row
     for obj in objs:
-        print(dir(obj))
         counter -= 1
         btn_row.append(KeyboardButton(
             text=getattr(obj, attr_name))
