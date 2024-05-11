@@ -63,7 +63,8 @@ def dinamic_ceyboard(objs, attr_name, ceyboard_row=2):
             btn_row
         ], resize_keyboard=True)
     else:
-        print(btn_many)
+        if btn_row:
+            btn_many.append(btn_row)
         ceyboard = ReplyKeyboardMarkup(
             keyboard=btn_many,
             resize_keyboard=True)
