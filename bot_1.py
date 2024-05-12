@@ -33,7 +33,7 @@ class BotManager:
 
 
 bot_1 = Client(
-    'my_account',
+    Config.BOT_ACCOUNT_NAME,
     api_hash=Config.API_HASH,
     api_id=Config.API_ID,
     bot_token=Config.BOT_TOKEN

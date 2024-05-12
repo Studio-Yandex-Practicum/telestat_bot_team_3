@@ -7,7 +7,7 @@ from crud.userstg import userstg_crud
 from settings import Config, logger
 
 user_bot = Client(
-    Config.ACCOUNT_NAME,
+    Config.USER_ACCOUNT_NAME,
     api_hash=Config.API_HASH,
     api_id=Config.API_ID,
     phone_number=Config.PHONE_NUMBER
@@ -59,17 +59,17 @@ def dinamic_keyboard(objs, attr_name, keyboard_row=2):
             btn_row = []
 
     if not btn_many:
-        ceyboard = ReplyKeyboardMarkup(keyboard=[
+        keyboard = ReplyKeyboardMarkup(keyboard=[
             btn_row
         ], resize_keyboard=True)
     else:
         if btn_row:
             btn_many.append(btn_row)
-        ceyboard = ReplyKeyboardMarkup(
+        keyboard = ReplyKeyboardMarkup(
             keyboard=btn_many,
             resize_keyboard=True)
     logger.info('Динамическая клавиатура сформирована успешно.')
-    return ceyboard
+    return keyboard
 
 
 def spy_bot(func):

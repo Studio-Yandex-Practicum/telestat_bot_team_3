@@ -39,10 +39,10 @@ async def manage_admin(client, message, act: Literal['add', 'del']):
         await client.send_message(
             message.chat.id,
             f'Проверьте корректность написания пользователей {message.text}',
-            reply_markup=dinamic_ceyboard(
+            reply_markup=dinamic_keyboard(
                 objs=bot_1_key[:3],
                 attr_name='key_name',
-                ceyboard_row=2
+                keyboard_row=2
             )
         )
     except UsernameNotOccupied as error:
@@ -53,10 +53,10 @@ async def manage_admin(client, message, act: Literal['add', 'del']):
             message.chat.id,
             f'Проверьте правильность написания никнеймов {message.text}, '
             'один из никнеймов не существует',
-            reply_markup=dinamic_ceyboard(
+            reply_markup=dinamic_keyboard(
                 objs=bot_1_key[:3],
                 attr_name='key_name',
-                ceyboard_row=2
+                keyboard_row=2
             )
         )
     else:
@@ -77,10 +77,10 @@ async def manage_admin(client, message, act: Literal['add', 'del']):
         await client.send_message(
             message.chat.id,
             f'Администраторы {message.text} успешно {cur_done}.',
-            reply_markup=dinamic_ceyboard(
+            reply_markup=dinamic_keyboard(
                 objs=bot_1_key[:3],
                 attr_name='key_name',
-                ceyboard_row=2
+                keyboard_row=2
             )
         )
         logger.info(
@@ -111,7 +111,7 @@ async def choise_channel(client, message):
         reply_markup=dinamic_keyboard(
             objs=channels.chats,
             attr_name='username',
-            ceyboard_row=4
+            keyboard_row=4
             )
         )
     return channels

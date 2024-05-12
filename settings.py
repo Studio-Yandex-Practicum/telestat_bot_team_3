@@ -15,8 +15,9 @@ class Config(object):
     API_ID = os.environ['API_ID']
     API_HASH = os.environ['API_HASH']
     BOT_TOKEN = os.environ['BOT_TOKEN']
-    ACCOUNT_NAME = os.environ['ACCOUNT_NAME']
+    USER_ACCOUNT_NAME = os.environ['USER_ACCOUNT_NAME']
     PHONE_NUMBER = os.environ['PHONE_NUMBER']
+    BOT_ACCOUNT_NAME = os.environ['BOT_ACCOUNT_NAME']
 
     # Конфигурация для гугл таблиц
     TYPE = os.environ['TYPE']
