@@ -54,12 +54,10 @@ class ChatUserInfo():
         return chat_member
 
     async def create_report(self):
-        """Формирует список словарей, в которых вся информация о подписчиках"""
-        report_data = []
-        users_activity = await self.get_activity()
-        report_data.append({
-            'Активности канала': users_activity
-        })
+        """Формирует словарь, в котором вся информация о подписчиках"""
+        report_data = {}
+        report_data[self.group_name] = {}
+        report_data[self.group_name]['Активности'] = await self.get_activity()
         users_info = []
         for user in await self.get_chat_users():
             full_user_info = {}
@@ -76,13 +74,11 @@ class ChatUserInfo():
             full_user_info['Статус подписчика'] = user.status
             full_user_info['Это бот ?'] = 'Да' if user.user.is_bot else 'Нет'
             try:
-                full_user_info['ID Фото'] = user.user.photo.big_file_id
+                full_user_info['Фото'] = user.user.photo.big_file_id
             except AttributeError:
                 full_user_info['Фото'] = 'Фото отсутствует'
             users_info.append(full_user_info)
-        report_data.append({
-            'Подписчики': users_info
-        })
+        report_data[self.group_name]['Подписчики'] = users_info
         logger.info('Информация по каждому подписчику собрана')
         return report_data
 

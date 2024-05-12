@@ -2,6 +2,7 @@ from typing import Literal
 
 from permissions.permissions import check_authorization
 from services.telegram_service import ChatUserInfo, add_users, get_channels
+from services.google_api_service import get_report
 from settings import configure_logging
 from assistants.assistants import dinamic_keyboard
 
@@ -130,7 +131,8 @@ async def auto_generate_report(client, message, bot_1):
     )
     chat = ChatUserInfo(bot_1, 'vag_angar')
     logger.info('Бот начал работу')
-    print(await chat.create_report())
+    report = await chat.create_report()
+    await get_report(report)
     await client.send_message(message.chat.id, type(await chat.create_report()))
 
 
