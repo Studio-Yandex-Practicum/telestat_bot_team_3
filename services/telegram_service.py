@@ -1,10 +1,15 @@
+<<<<<<< HEAD
+from pyrogram import Client
+from pyrogram.raw import functions
+=======
 from pyrogram import Client, enums
+>>>>>>> development
 
+from assistants.assistants import check_by_attr, spy_bot, user_bot
 from core.db import async_session, engine
 from crud.userstg import userstg_crud
 from permissions.permissions import check_authorization
 from settings import configure_logging
-from assistants.assistants import check_by_attr, spy_bot, user_bot
 
 logger = configure_logging()
 
@@ -135,6 +140,15 @@ class ChatUserInfo():
         }
         print(avg_results)
         return avg_results
+
+
+@spy_bot
+async def get_channels(bot: user_bot = user_bot):
+    """Получение телеграмм каналов."""
+
+    return (await bot.invoke(
+        (functions.channels.get_admined_public_channels.
+         GetAdminedPublicChannels())))
 
 
 async def add_users(user_id: int,

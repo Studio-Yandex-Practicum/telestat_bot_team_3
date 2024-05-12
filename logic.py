@@ -1,8 +1,9 @@
-from services.telegram_service import add_users, ChatUserInfo
-from permissions.permissions import check_authorization
 from typing import Literal
-from settings import configure_logging
 
+from permissions.permissions import check_authorization
+from services.telegram_service import ChatUserInfo, add_users, get_channels
+from settings import configure_logging
+from assistants.assistants import dinamic_keyboard
 
 logger = configure_logging()
 
@@ -53,7 +54,7 @@ async def manage_admin(client, message, action: Literal['add', 'del']):
             message.chat.id, f'У вас недостаточно прав для {action_values[action]["msg_str"]} '
                              'пользователей или вы ошиблись при вводе '
                              'данных пользователей, пожалуйста добавляйте '
-                             'пользовательские имена через запятую с пробелом.'
+                             'имена пользователей через запятую с пробелом.'
         )
         return
     else:
@@ -63,13 +64,18 @@ async def manage_admin(client, message, action: Literal['add', 'del']):
         return
 
 
-async def is_admin(client, message):
-    if not await check_authorization(message.chat.id):
+async def is_admin(client, message, is_superuser=False):
+    """Проверка авторизации."""
+
+    if not await check_authorization(
+                    message.from_user.id,
+                    is_superuser=is_superuser
+                    ):
         await client.send_message(
             message.chat.id,
             'Управлять ботом могут только Администраторы.'
         )
-        logger.info(f'Неудачная авторизация {message.chat.username}!')
+        logger.info(f'Неудачная авторизация {message.from_user.username}!')
         return False
     return True
 
@@ -83,8 +89,27 @@ async def del_admin(client, message):
     await manage_admin(client, message, action='del')
 
 
-async def choise_channel(client, message):
-    await client.send_message(message.chat.id, '...Выбираем телеграм канал...')
+async def choise_channel(client, message, bot):
+    """Получение каналов и выбор неоходимого канала телеграм."""
+
+    channels = await get_channels()
+
+    await client.send_message(
+        message.chat.id,
+        'Выберете желаемый канал на клавиатуре.',
+        reply_markup=dinamic_keyboard(
+            objs=channels.chats,
+            attr_name='username',
+            ceyboard_row=4
+            )
+        )
+    return channels
+
+
+async def set_channel():
+    """Установка выбранного канала."""
+
+    return await get_channels()
 
 
 async def set_period(client, message):
