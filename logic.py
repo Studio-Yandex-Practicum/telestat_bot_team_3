@@ -1,10 +1,9 @@
 from typing import Literal
 
-from pyrogram.types import KeyboardButton, ReplyKeyboardMarkup, ReplyKeyboardRemove
-
 from permissions.permissions import check_authorization
 from services.telegram_service import ChatUserInfo, add_users, get_channels
 from settings import configure_logging
+from assistants.assistants import dinamic_keyboard
 
 logger = configure_logging()
 
@@ -65,10 +64,13 @@ async def manage_admin(client, message, action: Literal['add', 'del']):
         return
 
 
-async def is_admin(client, message):
+async def is_admin(client, message, is_superuser=False):
     """Проверка авторизации."""
 
-    if not await check_authorization(message.from_user.id):
+    if not await check_authorization(
+                    message.from_user.id,
+                    is_superuser=is_superuser
+                    ):
         await client.send_message(
             message.chat.id,
             'Управлять ботом могут только Администраторы.'
@@ -90,45 +92,24 @@ async def del_admin(client, message):
 async def choise_channel(client, message, bot):
     """Получение каналов и выбор неоходимого канала телеграм."""
 
-    await client.send_message(message.chat.id, '...Выбираем телеграм канал...')
     channels = await get_channels()
-    print(len(channels.chats))
-    btn_1_4 = []
-    btn_many = []
-    counter = 1
-    for chat in channels.chats:
-        print(chat.username)
-        if counter > 0:
-            counter -= 1
-            btn_1_4.append(KeyboardButton(text=f'@{chat.username}'))
-        else:
-            counter = 1
-            btn_1_4.append(KeyboardButton(text=f'@{chat.username}'))
-            btn_many.append(btn_1_4)
 
-    if btn_many:
-        channels_btn = ReplyKeyboardMarkup(keyboard=[
-            btn_1_4
-        ], resize_keyboard=True)
-    else:
-        channels_btn = ReplyKeyboardMarkup(keyboard=btn_many, resize_keyboard=True)
-
-    # channels_btn = ReplyKeyboardMarkup(keyboard=[
-    #     [
-    #         KeyboardButton(text='Добавить'),
-    #         KeyboardButton(text='Удалить'),
-    #     ],
-    # ], resize_keyboard=True)
-
-
-    # await client.send_message(message.chat.id, 'Меняем клаву', reply_markup=ReplyKeyboardRemove())
     await client.send_message(
         message.chat.id,
-        'Выберете желаемый из своих каналов на клавиатуре.',
-        reply_markup=channels_btn
-    )
-    print(channels_btn)
-    return
+        'Выберете желаемый канал на клавиатуре.',
+        reply_markup=dinamic_keyboard(
+            objs=channels.chats,
+            attr_name='username',
+            ceyboard_row=4
+            )
+        )
+    return channels
+
+
+async def set_channel():
+    """Установка выбранного канала."""
+
+    return await get_channels()
 
 
 async def set_period(client, message):

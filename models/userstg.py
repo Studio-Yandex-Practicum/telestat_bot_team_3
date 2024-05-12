@@ -1,6 +1,7 @@
 from datetime import datetime as dt
 
-from sqlalchemy import BigInteger, Boolean, CheckConstraint, Column, DateTime, Integer, String
+from sqlalchemy import (BigInteger, Boolean, CheckConstraint, Column, DateTime,
+                        Integer, String)
 
 from core.db import Base
 
