@@ -36,7 +36,7 @@ async def check_by_attr(attr_name, attr_value, session) -> bool:
     return True
 
 
-def dinamic_keyboard(objs, attr_name, ceyboard_row=2):
+def dinamic_keyboard(objs, attr_name, keyboard_row=2):
     """
     Динамическая клавиатура для вывода в телеграм.
     objs - итерируемый объект или объекты,
@@ -47,14 +47,14 @@ def dinamic_keyboard(objs, attr_name, ceyboard_row=2):
     logger.info('Процесс построения динамической клавиатуры запущен!')
     btn_row = []
     btn_many = []
-    counter = ceyboard_row
+    counter = keyboard_row
     for obj in objs:
         counter -= 1
         btn_row.append(KeyboardButton(
             text=getattr(obj, attr_name))
             )
         if counter == 0:
-            counter = ceyboard_row
+            counter = keyboard_row
             btn_many.append(btn_row)
             btn_row = []
 

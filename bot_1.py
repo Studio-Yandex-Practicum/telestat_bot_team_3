@@ -58,7 +58,7 @@ async def command_start(
             reply_markup=dinamic_keyboard(
                 objs=bot_1_key[:3],
                 attr_name='key_name',
-                ceyboard_row=2
+                keyboard_row=2
             )
         )
         logger.debug(f'{message.chat.username} авторизован как владелец!')
@@ -70,7 +70,7 @@ async def command_start(
             reply_markup=dinamic_keyboard(
                 objs=[bot_1_key[2]],
                 attr_name='key_name',
-                ceyboard_row=2
+                keyboard_row=2
             )
         )
         logger.debug(f'{message.chat.username} авторизован как администратор бота!')
@@ -125,12 +125,8 @@ async def generate_report(
 
     chat = ChatUserInfo(bot_1, 'rubiconbittt')
     logger.info('Бот начал работу')
-<<<<<<< HEAD
-    info = await chat.create_report()
-=======
     info = await chat.get_chat_users()
     print(info)
->>>>>>> development
     await client.send_message(message.chat.id, len(info))
 
 
@@ -163,10 +159,10 @@ async def set_period_cmd(
         await client.send_message(
             message.chat.id,
             'Для запуска сбора статистики нажмите кнопку.',
-            reply_markup=dinamic_ceyboard(
+            reply_markup=dinamic_keyboard(
                 objs=[bot_1_key[4]],
                 attr_name='key_name',
-                ceyboard_row=2
+                keyboard_row=2
             )
         )
 
@@ -214,10 +210,10 @@ async def all_incomming_messages(
         await client.send_message(
             message.chat.id,
             'Выберете периодичность сбора аналитики.',
-            reply_markup=dinamic_ceyboard(
+            reply_markup=dinamic_keyboard(
                 objs=bot_1_key[3:],
                 attr_name='key_name',
-                ceyboard_row=2
+                keyboard_row=2
             )
         )
 
@@ -227,10 +223,10 @@ async def all_incomming_messages(
         await client.send_message(
             message.chat.id,
             'Для запуска сбора статистики нажмите кнопку.',
-            reply_markup=dinamic_ceyboard(
+            reply_markup=dinamic_keyboard(
                 objs=[bot_1_key[4]],
                 attr_name='key_name',
-                ceyboard_row=2
+                keyboard_row=2
             )
         )
         manager.period = period
