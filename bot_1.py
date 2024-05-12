@@ -2,16 +2,14 @@ from enum import Enum
 
 from pyrogram import Client, filters
 from pyrogram.types import messages_and_media, ReplyKeyboardRemove
-from pyrogram.errors.exceptions.bad_request_400 import UsernameNotOccupied, UsernameInvalid
 
 from assistants.assistants import dinamic_ceyboard
 from buttons import bot_1_key
 from logic import (choise_channel, add_admin, del_admin,
                    run_collect_analitics, set_period, set_channel)
-from services.telegram_service import ChatUserInfo, add_users
+from services.telegram_service import ChatUserInfo
 from permissions.permissions import check_authorization
 from settings import Config, configure_logging
-from assistants.assistants import spy_bot
 
 
 logger = configure_logging()

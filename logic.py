@@ -1,6 +1,5 @@
 from typing import Literal
 
-from permissions.permissions import check_authorization
 from services.telegram_service import ChatUserInfo, add_users, get_channels
 from settings import configure_logging
 from assistants.assistants import dinamic_ceyboard
