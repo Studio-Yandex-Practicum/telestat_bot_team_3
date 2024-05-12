@@ -3,7 +3,7 @@ from enum import Enum
 from pyrogram import Client, filters
 from pyrogram.types import messages_and_media
 
-from assistants.assistants import dinamic_ceyboard
+from assistants.assistants import dinamic_keyboard
 from buttons import bot_1_key
 from logic import (add_admin, choise_channel, del_admin, is_admin,
                    run_collect_analitics, set_period, set_channel)
@@ -42,7 +42,7 @@ async def command_start(
         await client.send_message(
             message.chat.id,
             f'{message.chat.username} вы авторизованы как владелец!',
-            reply_markup=dinamic_ceyboard(
+            reply_markup=dinamic_keyboard(
                 objs=bot_1_key[:3],
                 attr_name='key_name',
                 ceyboard_row=2
@@ -54,7 +54,7 @@ async def command_start(
         await client.send_message(
             message.chat.id,
             f'{message.chat.username} вы авторизованы как администратор бота!',
-            reply_markup=dinamic_ceyboard(
+            reply_markup=dinamic_keyboard(
                 objs=[bot_1_key[2]],
                 attr_name='key_name',
                 ceyboard_row=2
