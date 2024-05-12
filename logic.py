@@ -5,91 +5,103 @@ from services.telegram_service import ChatUserInfo, add_users, get_channels
 from settings import configure_logging
 from assistants.assistants import dinamic_ceyboard
 
+from pyrogram.errors.exceptions.bad_request_400 import (
+    UsernameNotOccupied, UsernameInvalid
+)
+from buttons import bot_1_key
+
+
 logger = configure_logging()
 
 
-async def manage_admin(client, message, action: Literal['add', 'del']):
-    action_values = {
+async def manage_admin(client, message, act: Literal['add', 'del']):
+    action = {
         'add': {
-            'split_str': 'add_admin ',
-            'msg_str': 'добавления',
+            't1': 'Добавляются',
+            'msg_str': 'добавлении',
             'done_msg_str': 'добавлены',
-            'cmd_msg_str': 'Добавить администратора',
-
         },
         'del': {
-            'split_str': 'del_admin ',
-            'msg_str': 'удаления',
+            't1': 'Удаляются',
+            'msg_str': 'удалении',
             'done_msg_str': 'удалены',
-            'cmd_msg_str': 'Удалить администратора',
         },
     }
-    # users_str = '@Maks_insurance, @jzx659, @XSteelHunterX'
-    # users_str = 'sdfsdf'
-    delimiter = action_values[action]['split_str']
-    if not message.text.startswith(delimiter):
+    cur_msg_str = action[act]['msg_str']
+    cur_t1 = action[act]['t1']
+    cur_done = action[act]['done_msg_str']
+
+    try:
+        incom_users = await client.get_users(message.text.split(', '))
+    except UsernameInvalid as error:
+        logger.error(
+            f'Ошибка при {cur_msg_str} админов {message.text}\n {error}'
+        )
         await client.send_message(
             message.chat.id,
-            f'Сообщение должно начинатьтся с команды {delimiter}.\n'
-            f'Формат сообщения: \n{delimiter} @username1, @username2\n'
-            'После написания команды необходимо нажать кнопку '
-            f'{action_values[action]["cmd_msg_str"]}'
+            f'Проверьте корректность написания пользователей {message.text}',
+            reply_markup=dinamic_ceyboard(
+                objs=bot_1_key[:3],
+                attr_name='key_name',
+                ceyboard_row=2
+            )
         )
-        return
-    users = message.text.split(delimiter)
-    users = await client.get_users(users[1].split(', '))
-    users = [{
-        'user_id': data.id,
-        'username': f'@{data.username}'
-        }for data in users]
-    args = {
-        'user_id': message.chat.id,
-        'users': users
-    }
-    if action == 'del':
-        args.update({'is_active': False})
-    users = await add_users(*args)
-    if not users:
+    except UsernameNotOccupied as error:
+        logger.error(
+            f'ошибка при {cur_msg_str} админов {message.text}\n {error}'
+        )
         await client.send_message(
-            message.chat.id, f'У вас недостаточно прав для {action_values[action]["msg_str"]} '
-                             'пользователей или вы ошиблись при вводе '
-                             'данных пользователей, пожалуйста добавляйте '
-                             'имена пользователей через запятую с пробелом.'
+            message.chat.id,
+            f'Проверьте правильность написания никнеймов {message.text}, '
+            'один из никнеймов не существует',
+            reply_markup=dinamic_ceyboard(
+                objs=bot_1_key[:3],
+                attr_name='key_name',
+                ceyboard_row=2
+            )
         )
-        return
     else:
-        await client.send_message(
-            message.chat.id, f'Пользователи {users} успешно {action_values[action]["done_msg_str"]}.'
+        logger.info(f'{cur_t1} администраторы {message.text}')
+        added_admins = [
+            {
+                'user_id': user.id,
+                'username': user.username
+            } for user in incom_users
+        ]
+        await add_users(
+            user_id=message.from_user.id,
+            users=added_admins,
+            is_superuser=False,
+            is_admin=True,
+            is_active=True
         )
-        return
-
-
-async def is_admin(client, message, is_superuser=False):
-    """Проверка авторизации."""
-
-    if not await check_authorization(
-                    message.from_user.id,
-                    is_superuser=is_superuser
-                    ):
         await client.send_message(
             message.chat.id,
-            'Управлять ботом могут только Администраторы.'
+            f'Администраторы {message.text} успешно {cur_done}.',
+            reply_markup=dinamic_ceyboard(
+                objs=bot_1_key[:3],
+                attr_name='key_name',
+                ceyboard_row=2
+            )
         )
-        logger.info(f'Неудачная авторизация {message.from_user.username}!')
-        return False
-    return True
+        logger.info(
+            f'Администраторы {message.text} успешно {cur_done}'
+        )
 
 
 async def add_admin(client, message):
     """Добавление администратора(ов) в ДБ."""
-    await manage_admin(client, message, action='add')
+
+    await manage_admin(client, message, act='add')
 
 
 async def del_admin(client, message):
-    await manage_admin(client, message, action='del')
+    """Деактивация администратора(ов) в ДБ."""
+
+    await manage_admin(client, message, act='del')
 
 
-async def choise_channel(client, message, bot):
+async def choise_channel(client, message):
     """Получение каналов и выбор неоходимого канала телеграм."""
 
     channels = await get_channels()
