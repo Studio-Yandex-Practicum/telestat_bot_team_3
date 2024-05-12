@@ -1,10 +1,11 @@
-from pyrogram import Client
+from pyrogram import Client, enums
+from pyrogram.raw import functions
 
+from assistants.assistants import check_by_attr, spy_bot, user_bot
 from core.db import async_session, engine
 from crud.userstg import userstg_crud
 from permissions.permissions import check_authorization
 from settings import configure_logging
-from assistants.assistants import check_by_attr, spy_bot, user_bot
 
 logger = configure_logging()
 
@@ -29,9 +30,11 @@ class ChatUserInfo():
     async def get_chat_users(self):
         """Метод получения списка подписчиков канала/группы"""
         subsribers = []
-        async for subscriber in self.bot.get_chat_members(self.group_name):
-            subsribers.append(subscriber)
-        logger.info(subscriber)
+        for i in '0123456789_qwertyuiopasdfghjklzxcvbnm':
+            async for subscriber in self.bot.get_chat_members(self.group_name, filter=enums.ChatMembersFilter.SEARCH, query=i):
+                if subscriber not in subsribers:
+                    subsribers.append(subscriber)
+        # logger.info(subscriber)
         return subsribers
 
     async def get_chat_members_count(self):
@@ -50,8 +53,13 @@ class ChatUserInfo():
         logger.info(f'Информация об {chat_member.user.username} получена')
         return chat_member
 
-    async def get_full_user_info(self):
+    async def create_report(self):
         """Формирует список словарей, в которых вся информация о подписчиках"""
+        report_data = []
+        users_activity = await self.get_activity()
+        report_data.append({
+            'Активности канала': users_activity
+        })
         users_info = []
         for user in await self.get_chat_users():
             full_user_info = {}
@@ -60,29 +68,83 @@ class ChatUserInfo():
             full_user_info['Имя'] = user.user.first_name
             full_user_info['Язык пользователя'] = user.user.language_code
             try:
-                full_user_info['Дата вступления'] = user.joined_date.strftime('%d-%m-%Y %H:%M:%S')
+                full_user_info[
+                    'Дата вступления'
+                ] = user.joined_date.strftime('%d-%m-%Y %H:%M:%S')
             except AttributeError:
                 full_user_info['Дата вступления'] = 'Отсутствует для владельца'
             full_user_info['Статус подписчика'] = user.status
             full_user_info['Это бот ?'] = 'Да' if user.user.is_bot else 'Нет'
-            # try:
-            #     full_user_info['Фото'] = await self.bot.download_media(user.user.photo.big_file_id, in_memory=True)
-            # except AttributeError:
-            #     full_user_info['Фото'] = 'Фото отсутствует'
+            try:
+                full_user_info['ID Фото'] = user.user.photo.big_file_id
+            except AttributeError:
+                full_user_info['Фото'] = 'Фото отсутствует'
             users_info.append(full_user_info)
+        report_data.append({
+            'Подписчики': users_info
+        })
         logger.info('Информация по каждому подписчику собрана')
-        return users_info
+        return report_data
 
     @spy_bot
     async def get_chat_messages(self):
         """Возвращает последние 200 сообщений"""
         last_messages = []
         async for message in user_bot.get_chat_history(self.group_name):
-            last_messages.append(message.text)
+            last_messages.append(message)
         logger.info(
             f'Получены последние 200 сообщений из группы {self.group_name}'
         )
         return last_messages
+
+    async def get_activity(self):
+        """Возвращает среднее количество просмотров/реакций/репостов"""
+        reactions = []
+        views = []
+        forwards = []
+        for activity in await self.get_chat_messages():
+            if activity.reactions:
+                for reaction in activity.reactions.reactions:
+                    try:
+                        if reaction.count:
+                            reactions.append(reaction.count)
+                    except AttributeError:
+                        pass
+            try:
+                if activity.forwards:
+                    forwards.append(activity.forwards)
+            except AttributeError:
+                pass
+            try:
+                if activity.views:
+                    views.append(activity.views)
+            except AttributeError:
+                pass
+        avg_results = {
+            'Среднее количество просмотров': round(
+                sum(views) / len(views),
+                2
+            ),
+            'Среднее количество реакций': round(
+                sum(reactions) / len(reactions),
+                2
+            ),
+            'Среднее количество репостов': round(
+                sum(forwards) / len(forwards),
+                2
+            ),
+        }
+        print(avg_results)
+        return avg_results
+
+
+@spy_bot
+async def get_channels(bot: user_bot = user_bot):
+    """Получение телеграмм каналов."""
+
+    return (await bot.invoke(
+        (functions.channels.get_admined_public_channels.
+         GetAdminedPublicChannels())))
 
 
 async def add_users(user_id: int,

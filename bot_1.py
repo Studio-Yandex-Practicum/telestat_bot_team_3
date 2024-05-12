@@ -3,30 +3,26 @@ from enum import Enum
 from pyrogram import Client, filters
 from pyrogram.types import messages_and_media
 
-from buttons import bot_1_keyboard
-# from logic import (
-#     add_admin,
-#     del_admin,
-#     choise_channel,
-#     generate_report,
-#     set_period
-# )
-from permissions.permissions import check_authorization
-from services.telegram_service import add_users, ChatUserInfo
+from assistants.assistants import dinamic_keyboard
+from buttons import bot_1_key
+from logic import (add_admin, choise_channel, del_admin, is_admin,
+                   run_collect_analitics, set_period, set_channel)
+from services.telegram_service import ChatUserInfo
 from settings import Config, configure_logging
+
+logger = configure_logging()
 
 
 class Commands(Enum):
-    add_admin = 'add_admin'
-    del_admin = 'del_admin'
-    choise_channel = 'choise_channel'
-    set_period = 'set_period'
-    generate_report = 'generate_report'
+    add_admin = 'Добавить администратора'
+    del_admin = 'Удалить администратора'
+    choise_channel = 'Выбрать телеграм канал'
+    set_period = 'Установить период сбора данных'
+    run_collect_analitics = 'Начать сбор аналитики'
 
 
-logger = configure_logging()
 bot_1 = Client(
-    "my_account",
+    'my_account',
     api_hash=Config.API_HASH,
     api_id=Config.API_ID,
     bot_token=Config.BOT_TOKEN
@@ -42,24 +38,32 @@ async def command_start(
 
     logger.info('Проверка на авторизацию')
 
-    if not await check_authorization(message.chat.id):
+    if await is_admin(client, message, is_superuser=True):
         await client.send_message(
             message.chat.id,
-            'Управлять ботом могут только Администраторы.'
+            f'{message.chat.username} вы авторизованы как владелец!',
+            reply_markup=dinamic_keyboard(
+                objs=bot_1_key[:3],
+                attr_name='key_name',
+                ceyboard_row=2
+            )
         )
-        logger.info(f'Неудачная авторизация {message.chat.username}!')
-        return
-    else:
+        logger.debug(f'{message.chat.username} авторизован как владелец!')
+    elif await is_admin(client=client, message=message):
+        print(bot_1_key[2])
         await client.send_message(
             message.chat.id,
-            'Вы прошли авторизацию!',
-            reply_markup=bot_1_keyboard
+            f'{message.chat.username} вы авторизованы как администратор бота!',
+            reply_markup=dinamic_keyboard(
+                objs=[bot_1_key[2]],
+                attr_name='key_name',
+                ceyboard_row=2
+            )
         )
-        logger.debug(f'{message.chat.username} авторизован!')
-        return
+        logger.debug(f'{message.chat.username} авторизован как администратор бота!')
 
 
-@bot_1.on_message(filters.regex('add_admin'))
+@bot_1.on_message(filters.regex(Commands.add_admin.value))
 async def command_add_admin(
     client: Client,
     message: messages_and_media.message.Message
@@ -67,32 +71,8 @@ async def command_add_admin(
     """Добавление администратора в ДБ."""
 
     logger.info('Добавляем администратора')
-    await client.send_message(
-        message.chat.id, '...Добавление администратора...'
-    )
-    # users_str = '@Maks_insurance, @jzx659, @XSteelHunterX'
-    # users_str = 'sdfsdf'
-    users = message.text.split('add_admin ')
-    users = await client.get_users(users[1].split(', '))
-    users = [{
-        'user_id': data.id,
-        'username': f'@{data.username}'
-        }for data in users]
-
-    users = await add_users(user_id=message.chat.id, users=users)
-    if not users:
-        await client.send_message(
-            message.chat.id, 'У вас недостаточно прав для добавления '
-                             'пользователей или вы ошиблись при вводе '
-                             'данных пользователей, пожалуйста добавляйте '
-                             'пользовательские имена через запятую с пробелом.'
-        )
-        return
-    else:
-        await client.send_message(
-            message.chat.id, f'Пользователи {users} успешно добавлены.'
-        )
-        return
+    if await is_admin(client, message):
+        await add_admin(client, message)
 
 
 @bot_1.on_message(filters.regex(Commands.del_admin.value))
@@ -105,58 +85,72 @@ async def command_del_admin(
     logger.info('Блокируем администратора бота')
 
 
-@bot_1.on_message(filters.regex(Commands.generate_report.value))
+@bot_1.on_message(filters.regex(Commands.run_collect_analitics.value))
 async def generate_report(
     client: Client,
     message: messages_and_media.message.Message
 ):
     """Отправляет отчёт."""
 
-    chat = ChatUserInfo(bot_1, 'vag_angar')
+    chat = ChatUserInfo(bot_1, 'rubiconbittt')
     logger.info('Бот начал работу')
-    print(await chat.get_full_user_info())
-    await client.send_message(message.chat.id, type(await chat.get_full_user_info()))
+    info = await chat.get_chat_users()
+    print(info)
+    await client.send_message(message.chat.id, len(info))
 
 
 @bot_1.on_message(filters.regex(Commands.choise_channel.value))
-async def choise_channel(
+async def choise_channel_cmd(
     client: Client,
     message: messages_and_media.message.Message
 ):
     """Находит все каналы владельца."""
 
     logger.info('Выбираем телеграм канал')
+    if await is_admin(client, message):
+        await choise_channel(client, message, bot=bot_1)
 
 
 @bot_1.on_message(filters.regex(Commands.set_period.value))
-async def set_period(
+async def set_period_cmd(
     client: Client,
     message: messages_and_media.message.Message
 ):
-    """Находит все каналы владельца."""
+    """Устанавливает переиод сбора данных."""
 
     logger.info('Устананавливаем период сбора данных')
+    if await is_admin(client, message):
+        await set_period(client, message)
 
 
-    #     if message.text == Commands.run_collect_analitics.value:
-    #         logger.info('Бот начал работу')
-    #         await generate_report(client, message)
+@bot_1.on_message(filters.regex(Commands.run_collect_analitics.value))
+async def run_collect_cmd(
+    client: Client,
+    message: messages_and_media.message.Message
+):
+    """Производит сбор данных в канале/группе."""
 
-    #     elif message.text == 'Добавить администратора':
-    #         logger.info('Добавляем администратора')
-    #         await add_admin(client, message)
+    logger.info('Начинаем сбор данных')
+    if await is_admin(client, message):
+        await run_collect_analitics(client, message)
 
-    #     elif message.text == Commands.del_admin.value:
-    #         logger.info('Удаляем администратора')
-    #         await del_admin(client, message)
 
-    #     elif message.text == Commands.choise_channel.value:
-    #         logger.info('Выбираем телеграм канал')
-    #         await choise_channel(client, message)
+@bot_1.on_message()
+async def all_incomming_messages(
+    client: Client,
+    message: messages_and_media.message.Message
+):
+    """Здесь обрабатываем все входящие сообщения."""
 
-    #     elif message.text == Commands.set_period.value:
-    #         logger.info('Устананавливаем период сбора данных')
-    #         await set_period(client, message)
+    channels = await set_channel()
+
+    channel_name = ''
+    for channel in channels.chats:
+        if channel.username == message.text:
+            channel_name = f'@{message.text}'
+            logger.info(f'Найден канал: {channel_name}')
+            break
+
 
 
 if __name__ == '__main__':
