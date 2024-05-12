@@ -3,7 +3,7 @@ from enum import Enum
 from pyrogram import Client, filters
 from pyrogram.types import messages_and_media, ReplyKeyboardRemove
 
-from assistants.assistants import dinamic_ceyboard
+from assistants.assistants import dinamic_keyboard
 from buttons import bot_1_key
 from logic import (choise_channel, add_admin, del_admin,
                    run_collect_analitics, set_period, set_channel)
@@ -55,7 +55,7 @@ async def command_start(
         await client.send_message(
             message.chat.id,
             f'{message.chat.username} вы авторизованы как владелец!',
-            reply_markup=dinamic_ceyboard(
+            reply_markup=dinamic_keyboard(
                 objs=bot_1_key[:3],
                 attr_name='key_name',
                 ceyboard_row=2
@@ -67,7 +67,7 @@ async def command_start(
         await client.send_message(
             message.chat.id,
             f'{message.chat.username} вы авторизованы как администратор бота!',
-            reply_markup=dinamic_ceyboard(
+            reply_markup=dinamic_keyboard(
                 objs=[bot_1_key[2]],
                 attr_name='key_name',
                 ceyboard_row=2
@@ -123,9 +123,14 @@ async def generate_report(
 ):
     """Отправляет отчёт."""
 
-    chat = ChatUserInfo(bot_1, 'vag_angar')
+    chat = ChatUserInfo(bot_1, 'rubiconbittt')
     logger.info('Бот начал работу')
+<<<<<<< HEAD
     info = await chat.create_report()
+=======
+    info = await chat.get_chat_users()
+    print(info)
+>>>>>>> development
     await client.send_message(message.chat.id, len(info))
 
 

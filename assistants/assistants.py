@@ -36,7 +36,7 @@ async def check_by_attr(attr_name, attr_value, session) -> bool:
     return True
 
 
-def dinamic_ceyboard(objs, attr_name, ceyboard_row=2):
+def dinamic_keyboard(objs, attr_name, ceyboard_row=2):
     """
     Динамическая клавиатура для вывода в телеграм.
     objs - итерируемый объект или объекты,

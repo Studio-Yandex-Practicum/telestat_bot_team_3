@@ -2,7 +2,7 @@ from typing import Literal
 
 from services.telegram_service import ChatUserInfo, add_users, get_channels
 from settings import configure_logging
-from assistants.assistants import dinamic_ceyboard
+from assistants.assistants import dinamic_keyboard
 
 from pyrogram.errors.exceptions.bad_request_400 import (
     UsernameNotOccupied, UsernameInvalid
@@ -108,7 +108,7 @@ async def choise_channel(client, message):
     await client.send_message(
         message.chat.id,
         'Выберете желаемый канал на клавиатуре.',
-        reply_markup=dinamic_ceyboard(
+        reply_markup=dinamic_keyboard(
             objs=channels.chats,
             attr_name='username',
             ceyboard_row=4

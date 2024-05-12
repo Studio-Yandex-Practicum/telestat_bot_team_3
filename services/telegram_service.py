@@ -1,4 +1,4 @@
-from pyrogram import Client
+from pyrogram import Client, enums
 from pyrogram.raw import functions
 
 from assistants.assistants import check_by_attr, spy_bot, user_bot
@@ -30,9 +30,11 @@ class ChatUserInfo():
     async def get_chat_users(self):
         """Метод получения списка подписчиков канала/группы"""
         subsribers = []
-        async for subscriber in self.bot.get_chat_members(self.group_name):
-            subsribers.append(subscriber)
-        logger.info(subscriber)
+        for i in '0123456789_qwertyuiopasdfghjklzxcvbnm':
+            async for subscriber in self.bot.get_chat_members(self.group_name, filter=enums.ChatMembersFilter.SEARCH, query=i):
+                if subscriber not in subsribers:
+                    subsribers.append(subscriber)
+        # logger.info(subscriber)
         return subsribers
 
     async def get_chat_members_count(self):
