@@ -1,9 +1,5 @@
-<<<<<<< HEAD
-from pyrogram import Client
-from pyrogram.raw import functions
-=======
 from pyrogram import Client, enums
->>>>>>> development
+from pyrogram.raw import functions
 
 from assistants.assistants import check_by_attr, spy_bot, user_bot
 from core.db import async_session, engine
