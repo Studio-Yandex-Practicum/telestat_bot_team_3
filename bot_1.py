@@ -1,7 +1,7 @@
 from enum import Enum
 
 from pyrogram import Client, filters
-from pyrogram.types import messages_and_media
+from pyrogram.types import messages_and_media, ReplyKeyboardRemove
 
 from assistants.assistants import dinamic_keyboard
 from buttons import bot_1_key
@@ -120,7 +120,13 @@ async def set_period_cmd(
 
     logger.info('Устананавливаем период сбора данных')
     if await is_admin(client, message):
+        print(bot_1_key[4])
         await set_period(client, message)
+        reply_markup=dinamic_keyboard(
+                objs=[bot_1_key[4]],
+                attr_name='key_name',
+                ceyboard_row=2
+            )
 
 
 @bot_1.on_message(filters.regex(Commands.run_collect_analitics.value))
@@ -149,6 +155,8 @@ async def all_incomming_messages(
         if channel.username == message.text:
             channel_name = f'@{message.text}'
             logger.info(f'Найден канал: {channel_name}')
+            set_period = f'@{message.text}'
+            logger.info(f'Выбран период: {set_period}')
             break
 
 

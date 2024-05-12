@@ -113,9 +113,20 @@ async def set_channel():
 
 
 async def set_period(client, message):
+    """Установка периода сбора данных."""
+
+    period =
+
     await client.send_message(
-        message.chat.id, '...Устананвливаем период сбора данных...'
-    )
+        message.chat.id,
+        'Установите период сбора данных',
+        reply_markup=dinamic_keyboard(
+            objs=period.chats,
+            attr_name='username',
+            keyboard_row=6
+            )
+        )
+    return period
 
 
 async def run_collect_analitics(client, message):
