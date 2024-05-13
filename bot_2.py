@@ -49,7 +49,7 @@ async def command_start(
         await client.send_message(
             message.chat.id, 'Вы прошли авторизацию!',
             reply_markup=dinamic_keyboard(
-                objs=bot_keys,
+                objs=(bot_keys[:2] + bot_keys[4:]),
                 attr_name='key_name',
             )
         )
