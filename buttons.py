@@ -1,5 +1,3 @@
-from pyrogram.types import ReplyKeyboardMarkup, KeyboardButton
-from pyrogram.types import InlineKeyboardMarkup, InlineKeyboardButton
 from assistants.assistants import DotNotationDict
 
 bot_keyboard = [
