@@ -1,15 +1,14 @@
 from typing import Literal
 
-from services.telegram_service import ChatUserInfo, add_users, get_channels
-from services.google_api_service import get_report
-from settings import configure_logging
+from pyrogram.errors.exceptions.bad_request_400 import (UsernameInvalid,
+                                                        UsernameNotOccupied)
+
 from assistants.assistants import dinamic_keyboard
-
-from pyrogram.errors.exceptions.bad_request_400 import (
-    UsernameNotOccupied, UsernameInvalid
-)
 from buttons import bot_1_key
-
+from services.google_api_service import get_report
+from services.telegram_service import (ChatUserInfo, add_users, get_channels,
+                                       update_users)
+from settings import configure_logging
 
 logger = configure_logging()
 
@@ -59,6 +58,19 @@ async def manage_admin(client, message, act: Literal['add', 'del']):
                 attr_name='key_name',
                 keyboard_row=2
             )
+        )
+    if act == 'del':
+        logger.info(f'{cur_t1} администраторы {message.text}')
+        deactivate_admins = [
+            {
+                'user_id': user.id,
+                'username': user.username
+            } for user in incom_users
+        ]
+        await update_users(
+            user_id=message.from_user.id,
+            users=deactivate_admins,
+            is_active=False
         )
     else:
         logger.info(f'{cur_t1} администраторы {message.text}')

@@ -106,7 +106,7 @@ async def command_del_admin(
     """Блокирует администраторов бота в ДБ."""
 
     if await check_authorization(message.from_user.id):
-        logger.info('Блокируем администратора бота')
+        logger.info('Блокируем администратора(ов) бота')
         await client.send_message(
             message.chat.id,
             'Укажите никнеймы администраторов, которых хотите деактивировать, '
