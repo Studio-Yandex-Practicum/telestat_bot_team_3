@@ -3,11 +3,12 @@ from pyrogram import Client, filters
 from pyrogram.types import messages_and_media
 
 from settings import configure_logging
-from buttons import bot_2_keyboard
+from buttons import bot_keys
 from logic import (
     add_admin, del_admin, auto_generate_report, generate_report, scheduling
 )
 from permissions.permissions import check_authorization
+from assistants.assistants import dinamic_keyboard
 
 
 class Commands(Enum):
@@ -41,7 +42,10 @@ async def command_start(
 
         await client.send_message(
             message.chat.id, 'Вы прошли авторизацию!',
-            reply_markup=bot_2_keyboard
+            reply_markup=dinamic_keyboard(
+                objs=bot_keys,
+                attr_name='key_name',
+            )
         )
         logger.debug(f'{message.chat.username} авторизован!')
 
