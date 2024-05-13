@@ -83,5 +83,5 @@ def get_user_session(func):
             return result
         finally:
             await user_bot.stop()
-            logger.info('Сессия от имени пользователя закончена.')
+            logger.info('Сессия от имени пользователя закрыта.')
     return wrapper
