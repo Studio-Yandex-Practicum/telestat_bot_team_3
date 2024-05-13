@@ -1,7 +1,7 @@
 from pyrogram import Client, enums
 from pyrogram.raw import functions
 
-from assistants.assistants import check_by_attr, spy_bot, user_bot
+from assistants.assistants import check_by_attr, get_user_session, user_bot
 from core.db import async_session, engine
 from crud.userstg import userstg_crud
 from permissions.permissions import check_authorization
@@ -82,7 +82,7 @@ class ChatUserInfo():
         logger.info('Информация по каждому подписчику собрана')
         return report_data
 
-    @spy_bot
+    @get_user_session
     async def get_chat_messages(self):
         """Возвращает последние 200 сообщений"""
         last_messages = []
@@ -134,7 +134,7 @@ class ChatUserInfo():
         return avg_results
 
 
-@spy_bot
+@get_user_session
 async def get_channels(bot: user_bot = user_bot):
     """Получение телеграмм каналов."""
 

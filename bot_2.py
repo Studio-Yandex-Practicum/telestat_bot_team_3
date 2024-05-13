@@ -9,6 +9,7 @@ from logic import (
 )
 from permissions.permissions import check_authorization
 from assistants.assistants import dinamic_keyboard
+from settings import Config
 
 
 class Commands(Enum):
@@ -20,7 +21,12 @@ class Commands(Enum):
 
 
 logger = configure_logging()
-bot_2 = Client("my_account")
+bot_2 = Client(
+    Config.BOT_ACCOUNT_NAME,
+    api_hash=Config.API_HASH,
+    api_id=Config.API_ID,
+    bot_token=Config.BOT_TOKEN
+)
 
 
 @bot_2.on_message(filters.command('start'))

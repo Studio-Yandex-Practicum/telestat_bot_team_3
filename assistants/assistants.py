@@ -72,16 +72,16 @@ def dinamic_keyboard(objs, attr_name, keyboard_row=2):
     return keyboard
 
 
-def spy_bot(func):
+def get_user_session(func):
     @wraps(func)
     async def wrapper(*args, **kwargs):
         await user_bot.start()
-        logger.info('Шпион запущен')
+        logger.info('Открыта сессия от имени пользователя.')
         try:
             result = await func(*args, **kwargs)
             logger.info('Данные получены')
             return result
         finally:
             await user_bot.stop()
-            logger.info('Шпион ускользнул')
+            logger.info('Сессия от имени пользователя закончена.')
     return wrapper
