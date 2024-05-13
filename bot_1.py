@@ -63,7 +63,6 @@ async def command_start(
         )
         logger.debug(f'{message.chat.username} авторизован как владелец!')
     elif await check_authorization(message.from_user.id):
-        print(bot_1_key[2])
         await client.send_message(
             message.chat.id,
             f'{message.chat.username} вы авторизованы как администратор бота!',
