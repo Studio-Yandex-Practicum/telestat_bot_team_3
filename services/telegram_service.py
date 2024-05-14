@@ -135,10 +135,12 @@ class ChatUserInfo():
 
 
 @get_user_session
-async def get_channels(bot: user_bot = user_bot):
+async def get_channels(
+    client: Client = user_bot
+):
     """Получение телеграмм каналов."""
 
-    return (await bot.invoke(
+    return (await client.invoke(
         (functions.channels.get_admined_public_channels.
          GetAdminedPublicChannels())))
 

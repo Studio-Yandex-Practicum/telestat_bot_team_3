@@ -118,16 +118,31 @@ async def choise_channel(client, message):
 
     channels = await get_channels()
 
-    await client.send_message(
-        message.chat.id,
-        'Выберете желаемый канал на клавиатуре.',
-        reply_markup=dinamic_keyboard(
-            objs=channels.chats,
-            attr_name='username',
-            keyboard_row=4
+    if channels:
+        await client.send_message(
+            message.chat.id,
+            'Выберете желаемый канал на клавиатуре, при его отсутствии '
+            'введите канал вручную.',
+            reply_markup=dinamic_keyboard(
+                objs=channels.chats,
+                attr_name='username',
+                keyboard_row=4
+                )
             )
-        )
-    return channels
+        return channels
+    else:
+        await client.send_message(
+            message.chat.id,
+            'Вероятно вы не являетесь владельцем ниодного канала! '
+            'Заведите свои каналы или введите требуемый канал '
+            'в текстовое поле и если "Бот" в нём зарегистрирован '
+            'продолжайте работу с "Ботом.',
+            reply_markup=dinamic_keyboard(
+                objs=[bot_keys[2]],
+                attr_name='key_name'
+                )
+            )
+    return False
 
 
 async def set_channel():
