@@ -4,7 +4,7 @@ from pyrogram import Client, filters
 from pyrogram.types import messages_and_media, ReplyKeyboardRemove
 
 from assistants.assistants import dinamic_keyboard
-from buttons import bot_1_key
+from buttons import bot_keys
 from logic import (choise_channel, add_admin, del_admin,
                    run_collect_analitics, set_period, set_channel)
 from services.telegram_service import ChatUserInfo
@@ -56,19 +56,18 @@ async def command_start(
             message.chat.id,
             f'{message.chat.username} вы авторизованы как владелец!',
             reply_markup=dinamic_keyboard(
-                objs=bot_1_key[:3],
+                objs=bot_keys[:3],
                 attr_name='key_name',
                 keyboard_row=2
             )
         )
         logger.debug(f'{message.chat.username} авторизован как владелец!')
     elif await check_authorization(message.from_user.id):
-        print(bot_1_key[2])
         await client.send_message(
             message.chat.id,
             f'{message.chat.username} вы авторизованы как администратор бота!',
             reply_markup=dinamic_keyboard(
-                objs=[bot_1_key[2]],
+                objs=[bot_keys[2]],
                 attr_name='key_name',
                 keyboard_row=2
             )
@@ -106,7 +105,7 @@ async def command_del_admin(
     """Блокирует администраторов бота в ДБ."""
 
     if await check_authorization(message.from_user.id):
-        logger.info('Блокируем администратора бота')
+        logger.info('Блокируем администратора(ов) бота')
         await client.send_message(
             message.chat.id,
             'Укажите никнеймы администраторов, которых хотите деактивировать, '
@@ -160,7 +159,7 @@ async def set_period_cmd(
             message.chat.id,
             'Для запуска сбора статистики нажмите кнопку.',
             reply_markup=dinamic_keyboard(
-                objs=[bot_1_key[4]],
+                objs=[bot_keys[4]],
                 attr_name='key_name',
                 keyboard_row=2
             )
@@ -211,7 +210,7 @@ async def all_incomming_messages(
             message.chat.id,
             'Выберете периодичность сбора аналитики.',
             reply_markup=dinamic_keyboard(
-                objs=bot_1_key[3:],
+                objs=bot_keys[3:5],
                 attr_name='key_name',
                 keyboard_row=2
             )
@@ -224,7 +223,7 @@ async def all_incomming_messages(
             message.chat.id,
             'Для запуска сбора статистики нажмите кнопку.',
             reply_markup=dinamic_keyboard(
-                objs=[bot_1_key[4]],
+                objs=[bot_keys[4]],
                 attr_name='key_name',
                 keyboard_row=2
             )

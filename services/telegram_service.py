@@ -1,7 +1,7 @@
 from pyrogram import Client, enums
 from pyrogram.raw import functions
 
-from assistants.assistants import check_by_attr, spy_bot, user_bot
+from assistants.assistants import check_by_attr, get_user_session, user_bot
 from core.db import async_session, engine
 from crud.userstg import userstg_crud
 from permissions.permissions import check_authorization
@@ -82,7 +82,7 @@ class ChatUserInfo():
         logger.info('Информация по каждому подписчику собрана')
         return report_data
 
-    @spy_bot
+    @get_user_session
     async def get_chat_messages(self):
         """Возвращает последние 200 сообщений"""
         last_messages = []
@@ -134,7 +134,7 @@ class ChatUserInfo():
         return avg_results
 
 
-@spy_bot
+@get_user_session
 async def get_channels(bot: user_bot = user_bot):
     """Получение телеграмм каналов."""
 
@@ -151,7 +151,10 @@ async def add_users(user_id: int,
                     ):
     """Добавление пользователей в ДБ."""
 
-    if not await check_authorization(user_id, True) or users is None:
+    if (not await check_authorization(
+            user_id,
+            is_superuser=True
+            ) or users is None):
         return False
 
     for user in users:
@@ -176,7 +179,53 @@ async def add_users(user_id: int,
     async with async_session() as session:
         async with engine.connect():
             for user in users:
-                db += ' ' + (await userstg_crud.create(user, session)).username
+                db += (await userstg_crud.create(user, session)).username
+                print(db)
+    return db
+
+
+async def update_users(
+        user_id: int,
+        users: list[dict] = None,
+        is_superuser: bool = False,
+        is_admin: bool = True,
+        is_active: bool = False
+        ):
+    """Обновление данных о пользователях в ДБ."""
+
+    if (not await check_authorization(
+            user_id,
+            is_superuser=True
+            ) or users is None):
+        return False
+
+    for user in users:
+        async with async_session() as session:
+            async with engine.connect():
+                if not await check_by_attr(
+                        'user_id',
+                        user['user_id'],
+                        session
+                        ):
+                    return False
+
+    users = [{
+        'user_id': user['user_id'],
+        'username': user['username'],
+        'is_superuser': is_superuser,
+        'is_admin': is_admin,
+        'is_active': is_active
+        } for user in users]
+
+    db = 0
+    async with async_session() as session:
+        async with engine.connect():
+            for user in users:
+                db += (await userstg_crud.set_update(
+                                            'user_id',
+                                            user['user_id'],
+                                            user,
+                                            session)).rowcount
     return db
 
 

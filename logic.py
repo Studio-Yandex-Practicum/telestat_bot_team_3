@@ -1,15 +1,14 @@
 from typing import Literal
 
-from services.telegram_service import ChatUserInfo, add_users, get_channels
-from services.google_api_service import get_report
-from settings import configure_logging
+from pyrogram.errors.exceptions.bad_request_400 import (UsernameInvalid,
+                                                        UsernameNotOccupied)
+
 from assistants.assistants import dinamic_keyboard
-
-from pyrogram.errors.exceptions.bad_request_400 import (
-    UsernameNotOccupied, UsernameInvalid
-)
-from buttons import bot_1_key
-
+from buttons import bot_keys
+from services.google_api_service import get_report
+from services.telegram_service import (ChatUserInfo, add_users, get_channels,
+                                       update_users)
+from settings import configure_logging
 
 logger = configure_logging()
 
@@ -41,7 +40,7 @@ async def manage_admin(client, message, act: Literal['add', 'del']):
             message.chat.id,
             f'Проверьте корректность написания пользователей {message.text}',
             reply_markup=dinamic_keyboard(
-                objs=bot_1_key[:3],
+                objs=bot_keys[:3],
                 attr_name='key_name',
                 keyboard_row=2
             )
@@ -55,10 +54,23 @@ async def manage_admin(client, message, act: Literal['add', 'del']):
             f'Проверьте правильность написания никнеймов {message.text}, '
             'один из никнеймов не существует',
             reply_markup=dinamic_keyboard(
-                objs=bot_1_key[:3],
+                objs=bot_keys[:3],
                 attr_name='key_name',
                 keyboard_row=2
             )
+        )
+    if act == 'del':
+        logger.info(f'{cur_t1} администраторы {message.text}')
+        deactivate_admins = [
+            {
+                'user_id': user.id,
+                'username': user.username
+            } for user in incom_users
+        ]
+        await update_users(
+            user_id=message.from_user.id,
+            users=deactivate_admins,
+            is_active=False
         )
     else:
         logger.info(f'{cur_t1} администраторы {message.text}')
@@ -79,7 +91,7 @@ async def manage_admin(client, message, act: Literal['add', 'del']):
             message.chat.id,
             f'Администраторы {message.text} успешно {cur_done}.',
             reply_markup=dinamic_keyboard(
-                objs=bot_1_key[:3],
+                objs=bot_keys[:3],
                 attr_name='key_name',
                 keyboard_row=2
             )

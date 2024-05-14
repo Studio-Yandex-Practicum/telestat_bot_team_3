@@ -10,6 +10,15 @@ class CRUDBase:
             model):
         self.model = model
 
+    async def get_all(
+            self,
+            session: AsyncSession,
+    ):
+        """Получение всех записей таблицы из ДБ."""
+
+        return ((await session.execute(
+            select(self.model))).all())
+
     async def get_by_attr(
             self,
             attr_name,
@@ -38,7 +47,8 @@ class CRUDBase:
 
     async def set_update(
             self,
-            id: int,
+            attr_name: int,
+            attr_value: int,
             obj_in: dict,
             session: AsyncSession,
     ):
@@ -48,8 +58,7 @@ class CRUDBase:
             update(
                 self.model).values(
                 **obj_in).where(
-                    self.model.id == id)
-        )
+                    getattr(self.model, attr_name) == attr_value))
         await session.commit()
         return db
 
