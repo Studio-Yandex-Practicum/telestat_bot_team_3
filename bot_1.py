@@ -8,6 +8,7 @@ from buttons import bot_keys
 from logic import (choise_channel, add_admin, del_admin,
                    run_collect_analitics, set_period, set_channel)
 from services.telegram_service import ChatUserInfo
+from services.google_api_service import get_report
 from permissions.permissions import check_authorization
 from settings import Config, configure_logging
 
@@ -122,11 +123,11 @@ async def generate_report(
 ):
     """Отправляет отчёт."""
 
-    chat = ChatUserInfo(bot_1, 'rubiconbittt')
+    chat = ChatUserInfo(bot_1, 'telestat_team')
     logger.info('Бот начал работу')
-    info = await chat.get_chat_users()
-    print(info)
-    await client.send_message(message.chat.id, len(info))
+    report = await chat.create_report()
+    await get_report(report)
+    await client.send_message(message.chat.id, len(report))
 
 
 @bot_1.on_message(filters.regex(Commands.choise_channel.value))

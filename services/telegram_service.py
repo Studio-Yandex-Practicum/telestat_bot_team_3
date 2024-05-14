@@ -71,7 +71,7 @@ class ChatUserInfo():
                 ] = user.joined_date.strftime('%d-%m-%Y %H:%M:%S')
             except AttributeError:
                 full_user_info['Дата вступления'] = 'Отсутствует для владельца'
-            full_user_info['Статус подписчика'] = user.status
+            full_user_info['Статус подписчика'] = user.status.name
             full_user_info['Это бот ?'] = 'Да' if user.user.is_bot else 'Нет'
             try:
                 full_user_info['Фото'] = user.user.photo.big_file_id
@@ -116,19 +116,27 @@ class ChatUserInfo():
                     views.append(activity.views)
             except AttributeError:
                 pass
+        data = {
+            'views': views,
+            'reactions': reactions,
+            'forwards': forwards,
+            'avg': {
+                'views': 0,
+                'reactions': 0,
+                'forwards': 0,
+            }
+        }
+        for key, item in data.items():
+            if key == 'avg':
+                continue
+            if len(item) > 0:
+                data['avg'][key] = round(
+                    sum(item) / len(item), 2
+                )
         avg_results = {
-            'Среднее количество просмотров': round(
-                sum(views) / len(views),
-                2
-            ),
-            'Среднее количество реакций': round(
-                sum(reactions) / len(reactions),
-                2
-            ),
-            'Среднее количество репостов': round(
-                sum(forwards) / len(forwards),
-                2
-            ),
+            'Среднее количество просмотров': data['avg']['views'],
+            'Среднее количество реакций': data['avg']['reactions'],
+            'Среднее количество репостов': data['avg']['forwards']
         }
         print(avg_results)
         return avg_results
