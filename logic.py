@@ -1,8 +1,8 @@
 from typing import Literal
 
-from pyrogram.errors.exceptions.bad_request_400 import (UsernameInvalid,
+from pyrogram.errors.exceptions.bad_request_400 import (ChatAdminRequired,
+                                                        UsernameInvalid,
                                                         UsernameNotOccupied,
-                                                        ChatAdminRequired,
                                                         UserNotParticipant)
 
 from assistants.assistants import dinamic_keyboard
@@ -10,7 +10,7 @@ from buttons import bot_keys
 from services.google_api_service import get_report
 from services.telegram_service import (ChatUserInfo, add_users, get_channels,
                                        update_users)
-from settings import configure_logging, Config
+from settings import Config, configure_logging
 
 logger = configure_logging()
 
@@ -153,12 +153,6 @@ async def choise_channel(client, message):
                 )
             )
     return False
-
-
-async def set_channel():
-    """Установка выбранного канала."""
-
-    return await get_channels()
 
 
 async def set_period(client, message):

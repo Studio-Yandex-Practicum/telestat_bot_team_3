@@ -8,7 +8,7 @@ from pyrogram.types import ReplyKeyboardRemove, messages_and_media
 from assistants.assistants import dinamic_keyboard
 from buttons import bot_keys
 from logic import (add_admin, choise_channel, del_admin, run_collect_analitics,
-                   set_channel, set_period)
+                   set_period)
 from permissions.permissions import check_authorization
 from services.telegram_service import ChatUserInfo
 from settings import Config, configure_logging

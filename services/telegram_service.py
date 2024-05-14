@@ -145,9 +145,6 @@ async def get_channels(
         if dialog.chat.username and dialog.chat.title:
             channels.append(dialog)
     return channels
-    # return (await client.invoke(
-    #     (functions.channels.get_admined_public_channels.
-    #      GetAdminedPublicChannels())))
 
 
 async def add_users(user_id: int,
