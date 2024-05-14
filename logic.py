@@ -135,7 +135,7 @@ async def choise_channel(client, message):
             'введите канал вручную.',
             reply_markup=dinamic_keyboard(
                 objs=channels,
-                attr_name='usernme',
+                attr_name='username',
                 keyboard_row=4
                 )
             )
