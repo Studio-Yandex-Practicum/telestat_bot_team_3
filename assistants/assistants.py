@@ -71,17 +71,20 @@ def dinamic_keyboard(objs, attr_name, keyboard_row=2):
             btn_many.append(btn_row)
             btn_row = []
 
-    if not btn_many:
-        keyboard = ReplyKeyboardMarkup(keyboard=[
-            btn_row
-        ], resize_keyboard=True)
-    else:
-        if btn_row:
-            btn_many.append(btn_row)
-        keyboard = ReplyKeyboardMarkup(
-            keyboard=btn_many,
-            resize_keyboard=True)
-    logger.info('Динамическая клавиатура сформирована успешно.')
+    try:
+        if not btn_many:
+            keyboard = ReplyKeyboardMarkup(keyboard=[
+                btn_row
+            ], resize_keyboard=True)
+        else:
+            if btn_row:
+                btn_many.append(btn_row)
+            keyboard = ReplyKeyboardMarkup(
+                keyboard=btn_many,
+                resize_keyboard=True)
+        logger.info('Динамическая клавиатура сформирована успешно.')
+    except ReplyMarkupInvalid as e:
+        logger.error(f'Ошибка клавиатуры:\n {e}')
     return keyboard
 
 
