@@ -140,9 +140,14 @@ async def get_channels(
 ):
     """Получение телеграмм каналов."""
 
-    return (await client.invoke(
-        (functions.channels.get_admined_public_channels.
-         GetAdminedPublicChannels())))
+    channels = []
+    async for dialog in client.get_dialogs():
+        if dialog.chat.username and dialog.chat.title:
+            channels.append(dialog)
+    return channels
+    # return (await client.invoke(
+    #     (functions.channels.get_admined_public_channels.
+    #      GetAdminedPublicChannels())))
 
 
 async def add_users(user_id: int,

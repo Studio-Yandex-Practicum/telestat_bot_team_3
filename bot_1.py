@@ -88,7 +88,7 @@ async def command_add_admin(
 ):
     """Добавление администратора в ДБ."""
 
-    if await check_authorization(message.from_user.id):
+    if manager.owner_or_admin == 'owner':
         logger.info('Добавляем администратора')
 
         await client.send_message(
@@ -109,7 +109,7 @@ async def command_del_admin(
 ):
     """Блокирует администраторов бота в ДБ."""
 
-    if await check_authorization(message.from_user.id):
+    if manager.owner_or_admin == 'owner':
         logger.info('Блокируем администратора(ов) бота')
         await client.send_message(
             message.chat.id,
@@ -143,7 +143,7 @@ async def choise_channel_cmd(
     """Находит все каналы владельца."""
 
     logger.info('Выбираем телеграм канал')
-    if await check_authorization(message.from_user.id):
+    if manager.owner_or_admin == 'owner' or manager.owner_or_admin == 'admin':
         await choise_channel(client, message)
         manager.choise_channel_flag = True
 
@@ -157,7 +157,7 @@ async def set_period_cmd(
     """Устанавливает переиод сбора данных."""
 
     logger.info('Устананавливаем период сбора данных')
-    if await check_authorization(message.from_user.id):
+    if manager.owner_or_admin == 'owner' or manager.owner_or_admin == 'admin':
         await set_period(client, message)
         manager.set_period_flag = True
         await client.send_message(
@@ -179,7 +179,7 @@ async def run_collect_cmd(
     """Производит сбор данных в канале/группе."""
 
     logger.info('Начинаем сбор данных')
-    if await check_authorization(message.from_user.id):
+    if manager.owner_or_admin == 'owner' or manager.owner_or_admin == 'admin':
         await run_collect_analitics(client, message)
 
 
