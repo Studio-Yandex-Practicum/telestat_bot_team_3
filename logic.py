@@ -129,7 +129,7 @@ async def choise_channel(client, message):
         except FloodWait as e:
             logger.error(f'У пользователя {Config.BOT_ACCOUNT_NAME} '
                          'слишком много контактов, сработала защита '
-                         f'"Телеграм"/n {e}')
+                         f'"Телеграм"\n {e}')
         except ChatAdminRequired:
             logger.error(f'Пользователю: {Config.BOT_ACCOUNT_NAME} '
                          'требуются права администратора.')
