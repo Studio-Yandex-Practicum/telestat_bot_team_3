@@ -1,6 +1,4 @@
 from pyrogram import Client, enums
-from pyrogram.errors.exceptions.flood_420 import FloodWait
-from pyrogram.raw import functions
 
 from assistants.assistants import check_by_attr, get_user_session, user_bot
 from core.db import async_session, engine
@@ -151,14 +149,8 @@ async def get_channels(
 
     channels = []
     async for dialog in client.get_dialogs():
-        try:
-            if dialog.chat.username and dialog.chat.title:
-                channels.append(dialog)
-        except FloodWait as e:
-            logger.error(f'У пользователя {Config.USER_ACCOUNT_NAME} '
-                         'слишком много контактов, сработала защита '
-                         f'"Телеграм"/n {e}')
-            return channels
+        if dialog.chat.username and dialog.chat.title:
+            channels.append(dialog)
     return channels
 
 
