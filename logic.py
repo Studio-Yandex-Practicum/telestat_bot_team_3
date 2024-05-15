@@ -158,12 +158,6 @@ async def choise_channel(client, message):
     return False
 
 
-async def set_period(client, message):
-    await client.send_message(
-        message.chat.id, '...Устананвливаем период сбора данных...'
-    )
-
-
 async def run_collect_analitics(client, message):
     await client.send_message(
         message.chat.id, '...Начинаем сбор данных...'

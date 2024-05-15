@@ -42,6 +42,9 @@ bot_keyboard = [
     },
     {
         'key_name': 'Свой вариант'
+    },
+    {
+        'key_name': "it's comming..."
     }
 ]
 

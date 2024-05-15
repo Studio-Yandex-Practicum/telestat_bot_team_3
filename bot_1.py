@@ -9,12 +9,12 @@ from pyrogram.types import ReplyKeyboardRemove, messages_and_media
 from assistants.assistants import dinamic_keyboard
 from buttons import bot_keys
 from logic import (choise_channel, add_admin, del_admin,
-                   run_collect_analitics, set_period)
+                   run_collect_analitics)
 from services.telegram_service import ChatUserInfo
 from services.google_api_service import get_report
 from permissions.permissions import check_authorization
-from services.telegram_service import ChatUserInfo
 from settings import Config, configure_logging
+
 
 logger = configure_logging()
 
@@ -147,6 +147,11 @@ async def choise_channel_cmd(
     """Находит все каналы владельца."""
 
     logger.info('Выбираем телеграм канал')
+    await client.send_message(
+            message.chat.id,
+            'Идёт процесс получения каналов, пожалуйста, подождите...',
+            reply_markup=ReplyKeyboardRemove()
+        )
     if manager.owner_or_admin == 'owner' or manager.owner_or_admin == 'admin':
         await choise_channel(client, message)
         manager.choise_channel_flag = True
@@ -175,7 +180,7 @@ async def set_period_cmd(
 
 
 @bot_1.on_message(filters.regex(Commands.user_period.value))
-async def run_collect_cmd(
+async def set_user_period(
     client: Client,
     message: messages_and_media.message.Message
 ):
@@ -291,6 +296,7 @@ async def all_incomming_messages(
                 keyboard_row=2
             )
         )
+        manager.owner_or_admin = ''
 
 
 if __name__ == '__main__':
