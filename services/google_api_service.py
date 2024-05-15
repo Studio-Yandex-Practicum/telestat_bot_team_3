@@ -235,8 +235,11 @@ async def get_report(
                                             sheet_title,
                                             data,
                                             aiogoogle)
+            url = f'https://docs.google.com/spreadsheets/d/{spreadsheetid}'
             logger.info(
-                f'Отчет сформирован: URL https://docs.google.com/spreadsheets/d/{spreadsheetid}'
+                f'Отчет по каналу {chanal_name} сформирован: URL {url}'
             )
-            reports_url.append(f'https://docs.google.com/spreadsheets/d/{spreadsheetid}')
+            reports_url.append(
+                f'Отчет по каналу {chanal_name} сформирован: {url}'
+            )
         return reports_url

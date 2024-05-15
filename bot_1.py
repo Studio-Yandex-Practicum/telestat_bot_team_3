@@ -133,9 +133,11 @@ async def generate_report(
     logger.info('Бот начал работу')
     report = await chat.create_report()
     reports_url = await get_report(report)
-    for url in reports_url:
-        await client.send_message(message.chat.id,
-                                  'Отчет сформирован: ' + url)
+    for msg in reports_url:
+        await client.send_message(
+            message.chat.id,
+            msg
+        )
 
 
 @bot_1.on_message(filters.regex(Commands.choise_channel.value))
