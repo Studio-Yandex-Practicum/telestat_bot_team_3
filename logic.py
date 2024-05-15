@@ -1,14 +1,16 @@
 from typing import Literal
 
-from pyrogram.errors.exceptions.bad_request_400 import (UsernameInvalid,
-                                                        UsernameNotOccupied)
+from pyrogram.errors.exceptions.bad_request_400 import (ChatAdminRequired,
+                                                        UsernameInvalid,
+                                                        UsernameNotOccupied,
+                                                        UserNotParticipant)
 
 from assistants.assistants import dinamic_keyboard
 from buttons import bot_keys
 from services.google_api_service import get_report
 from services.telegram_service import (ChatUserInfo, add_users, get_channels,
                                        update_users)
-from settings import configure_logging
+from settings import Config, configure_logging
 
 logger = configure_logging()
 
@@ -116,24 +118,43 @@ async def del_admin(client, message):
 async def choise_channel(client, message):
     """Получение каналов и выбор неоходимого канала телеграм."""
 
-    channels = await get_channels()
-
-    await client.send_message(
-        message.chat.id,
-        'Выберете желаемый канал на клавиатуре.',
-        reply_markup=dinamic_keyboard(
-            objs=channels.chats,
-            attr_name='username',
-            keyboard_row=4
+    channels = []
+    for channel in await get_channels():
+        try:
+            (await client.get_chat_member(
+                channel.chat.username, Config.BOT_ACCOUNT_NAME))
+            channels.append(channel.chat)
+        except ChatAdminRequired:
+            logger.error(f'Пользователю: {Config.BOT_ACCOUNT_NAME} '
+                         'требуются права администратора.')
+        except UserNotParticipant:
+            logger.error(f'Пользователь: {Config.BOT_ACCOUNT_NAME} '
+                         'не является владельцем канала.')
+    if channels:
+        await client.send_message(
+            message.chat.id,
+            'Выберете желаемый канал на клавиатуре, при его отсутствии '
+            'введите канал вручную.',
+            reply_markup=dinamic_keyboard(
+                objs=channels,
+                attr_name='username',
+                keyboard_row=4
+                )
             )
-        )
-    return channels
-
-
-async def set_channel():
-    """Установка выбранного канала."""
-
-    return await get_channels()
+        return channels
+    else:
+        await client.send_message(
+            message.chat.id,
+            'Вероятно вы не являетесь владельцем ниодного канала! '
+            'Заведите свои каналы или введите требуемый канал '
+            'в текстовое поле и если "Бот" в нём зарегистрирован '
+            'продолжайте работу с "Ботом.',
+            reply_markup=dinamic_keyboard(
+                objs=[bot_keys[2]],
+                attr_name='key_name'
+                )
+            )
+    return False
 
 
 async def set_period(client, message):

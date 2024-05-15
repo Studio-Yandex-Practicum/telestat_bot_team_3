@@ -2,6 +2,7 @@ from functools import wraps
 
 from pyrogram import Client
 from pyrogram.types import KeyboardButton, ReplyKeyboardMarkup
+from pyrogram.errors.exceptions.bad_request_400 import ReplyMarkupInvalid
 
 from crud.userstg import userstg_crud
 from settings import Config, logger
@@ -39,16 +40,28 @@ async def check_by_attr(attr_name, attr_value, session) -> bool:
 def dinamic_keyboard(objs, attr_name, keyboard_row=2):
     """
     Динамическая клавиатура для вывода в телеграм.
-    objs - итерируемый объект или объекты,
+    objs: list[dict] - итерируемый объект или объекты ,
     attr_name - атрибут который из текущего объекта будет
         отображаться в виде названия кнопки,
     ceyboard_row - пределитель колличества кнопок на одну строку.
     """
     logger.info('Процесс построения динамической клавиатуры запущен!')
+    try:
+        if not objs or objs is None:
+            raise TypeError
+    except TypeError:
+        logger.error('Проверьте входной объект objs он пуст или None')
+        return False
     btn_row = []
     btn_many = []
     counter = keyboard_row
     for obj in objs:
+        try:
+            if not hasattr(obj, attr_name):
+                raise KeyError
+        except KeyError:
+            logger.error('Отсутствует ключ: attr_name')
+            return False
         counter -= 1
         btn_row.append(KeyboardButton(
             text=getattr(obj, attr_name))
@@ -58,17 +71,20 @@ def dinamic_keyboard(objs, attr_name, keyboard_row=2):
             btn_many.append(btn_row)
             btn_row = []
 
-    if not btn_many:
-        keyboard = ReplyKeyboardMarkup(keyboard=[
-            btn_row
-        ], resize_keyboard=True)
-    else:
-        if btn_row:
-            btn_many.append(btn_row)
-        keyboard = ReplyKeyboardMarkup(
-            keyboard=btn_many,
-            resize_keyboard=True)
-    logger.info('Динамическая клавиатура сформирована успешно.')
+    try:
+        if not btn_many:
+            keyboard = ReplyKeyboardMarkup(keyboard=[
+                btn_row
+            ], resize_keyboard=True)
+        else:
+            if btn_row:
+                btn_many.append(btn_row)
+            keyboard = ReplyKeyboardMarkup(
+                keyboard=btn_many,
+                resize_keyboard=True)
+        logger.info('Динамическая клавиатура сформирована успешно.')
+    except ReplyMarkupInvalid as e:
+        logger.error(f'Ошибка клавиатуры:\n {e}')
     return keyboard
 
 

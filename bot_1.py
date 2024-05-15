@@ -1,17 +1,19 @@
 from enum import Enum
 
 from pyrogram import Client, filters
-from pyrogram.types import messages_and_media, ReplyKeyboardRemove
+from pyrogram.errors.exceptions.bad_request_400 import (UsernameNotOccupied,
+                                                        UserNotParticipant)
+from pyrogram.types import ReplyKeyboardRemove, messages_and_media
 
 from assistants.assistants import dinamic_keyboard
 from buttons import bot_keys
 from logic import (choise_channel, add_admin, del_admin,
-                   run_collect_analitics, set_period, set_channel)
+                   run_collect_analitics, set_period)
 from services.telegram_service import ChatUserInfo
 from services.google_api_service import get_report
 from permissions.permissions import check_authorization
+from services.telegram_service import ChatUserInfo
 from settings import Config, configure_logging
-
 
 logger = configure_logging()
 
@@ -29,6 +31,7 @@ class BotManager:
     del_admin_flag = False
     choise_channel_flag = False
     set_period_flag = False
+    owner_or_admin = ''
     chanel = ''
     period = 60
 
@@ -46,7 +49,8 @@ manager = BotManager()
 @bot_1.on_message(filters.command('start'))
 async def command_start(
     client: Client,
-    message: messages_and_media.message.Message
+    message: messages_and_media.message.Message,
+    manager=manager
 ):
     """Обработчик команды на запуск бота по сбору данных."""
 
@@ -62,6 +66,7 @@ async def command_start(
                 keyboard_row=2
             )
         )
+        manager.owner_or_admin = 'owner'
         logger.debug(f'{message.chat.username} авторизован как владелец!')
     elif await check_authorization(message.from_user.id):
         await client.send_message(
@@ -73,6 +78,7 @@ async def command_start(
                 keyboard_row=2
             )
         )
+        manager.owner_or_admin = 'admin'
         logger.debug(f'{message.chat.username} авторизован как администратор бота!')
 
 
@@ -84,7 +90,7 @@ async def command_add_admin(
 ):
     """Добавление администратора в ДБ."""
 
-    if await check_authorization(message.from_user.id):
+    if manager.owner_or_admin == 'owner':
         logger.info('Добавляем администратора')
 
         await client.send_message(
@@ -105,7 +111,7 @@ async def command_del_admin(
 ):
     """Блокирует администраторов бота в ДБ."""
 
-    if await check_authorization(message.from_user.id):
+    if manager.owner_or_admin == 'owner':
         logger.info('Блокируем администратора(ов) бота')
         await client.send_message(
             message.chat.id,
@@ -139,7 +145,7 @@ async def choise_channel_cmd(
     """Находит все каналы владельца."""
 
     logger.info('Выбираем телеграм канал')
-    if await check_authorization(message.from_user.id):
+    if manager.owner_or_admin == 'owner' or manager.owner_or_admin == 'admin':
         await choise_channel(client, message)
         manager.choise_channel_flag = True
 
@@ -153,7 +159,7 @@ async def set_period_cmd(
     """Устанавливает переиод сбора данных."""
 
     logger.info('Устананавливаем период сбора данных')
-    if await check_authorization(message.from_user.id):
+    if manager.owner_or_admin == 'owner' or manager.owner_or_admin == 'admin':
         await set_period(client, message)
         manager.set_period_flag = True
         await client.send_message(
@@ -175,7 +181,7 @@ async def run_collect_cmd(
     """Производит сбор данных в канале/группе."""
 
     logger.info('Начинаем сбор данных')
-    if await check_authorization(message.from_user.id):
+    if manager.owner_or_admin == 'owner' or manager.owner_or_admin == 'admin':
         await run_collect_analitics(client, message)
 
 
@@ -191,33 +197,50 @@ async def all_incomming_messages(
         await add_admin(client, message)
         manager.add_admin_flag = False
 
-    if manager.del_admin_flag:
+    elif manager.del_admin_flag:
         await del_admin(client, message)
         manager.del_admin_flag = False
 
-    if manager.choise_channel_flag:
-        channels = await set_channel()
-        channel_name = ''
-        for channel in channels.chats:
-            if channel.username == message.text:
-                channel_name = f'@{message.text}'
-                logger.info(f'Найден канал: {channel_name}')
-                break
-
-        manager.choise_channel_flag = False
-        manager.chanel = channel_name
-
-        await client.send_message(
-            message.chat.id,
-            'Выберете периодичность сбора аналитики.',
-            reply_markup=dinamic_keyboard(
-                objs=bot_keys[3:5],
-                attr_name='key_name',
-                keyboard_row=2
+    elif manager.choise_channel_flag:
+        try:
+            if ((await client.get_chat_member(
+                message.text,
+                Config.BOT_ACCOUNT_NAME)
+                    ).privileges.can_restrict_members):
+                manager.chanel = message.text
+                await client.send_message(
+                    message.chat.id,
+                    'Выберете периодичность сбора аналитики.',
+                    reply_markup=dinamic_keyboard(
+                        objs=bot_keys[3:5],
+                        attr_name='key_name',
+                        keyboard_row=2
+                    )
+                )
+        except UsernameNotOccupied as e:
+            logger.error(f'Название канала введено не корректно или не занято!\n {e}')
+            await client.send_message(
+                    message.chat.id,
+                    'Вероятно В ведённом канале "Бот" не зарегистрирован!',
+                    reply_markup=dinamic_keyboard(
+                        objs=[bot_keys[2]],
+                        attr_name='key_name'
+                    )
+                )
+        except UserNotParticipant as e:
+            logger.error(f'В ведённом канале "Бот" не зарегистрирован!\n {e}')
+            await client.send_message(
+                message.chat.id,
+                'Вероятно В ведённом канале "Бот" не зарегистрирован!',
+                reply_markup=dinamic_keyboard(
+                    objs=([bot_keys[2]],
+                          bot_keys[:3])[manager.owner_or_admin == 'owner'],
+                    attr_name='key_name'
+                )
             )
-        )
+        manager.choise_channel_flag = False
 
-    if manager.set_period_flag:
+    elif manager.set_period_flag:
         print('Здесь должна быть функция выбора периодичности')
         period = 60  # например 60 минут
         await client.send_message(
@@ -231,6 +254,18 @@ async def all_incomming_messages(
         )
         manager.period = period
         manager.set_period_flag = False
+
+    else:
+        await client.send_message(
+            message.chat.id,
+            'Упс, этого действия мы от вас не предвидели!',
+            reply_markup=dinamic_keyboard(
+                objs=([bot_keys[2]],
+                      bot_keys[:3])[manager.owner_or_admin == 'owner'],
+                attr_name='key_name',
+                keyboard_row=2
+            )
+        )
 
 
 if __name__ == '__main__':
