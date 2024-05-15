@@ -1,11 +1,10 @@
 from pyrogram import Client, enums
-from pyrogram.raw import functions
 
 from assistants.assistants import check_by_attr, get_user_session, user_bot
 from core.db import async_session, engine
 from crud.userstg import userstg_crud
 from permissions.permissions import check_authorization
-from settings import configure_logging
+from settings import Config, configure_logging
 
 logger = configure_logging()
 

@@ -4,6 +4,7 @@ from pyrogram.errors.exceptions.bad_request_400 import (ChatAdminRequired,
                                                         UsernameInvalid,
                                                         UsernameNotOccupied,
                                                         UserNotParticipant)
+from pyrogram.errors.exceptions.flood_420 import FloodWait
 
 from assistants.assistants import dinamic_keyboard
 from buttons import bot_keys
@@ -125,6 +126,10 @@ async def choise_channel(client, message):
             (await client.get_chat_member(
                 channel.chat.username, Config.BOT_ACCOUNT_NAME))
             channels.append(channel.chat)
+        except FloodWait as e:
+            logger.error(f'У пользователя {Config.BOT_ACCOUNT_NAME} '
+                         'слишком много контактов, сработала защита '
+                         f'"Телеграм"/n {e}')
         except ChatAdminRequired:
             logger.error(f'Пользователю: {Config.BOT_ACCOUNT_NAME} '
                          'требуются права администратора.')
