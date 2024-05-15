@@ -61,46 +61,47 @@ async def manage_admin(client, message, act: Literal['add', 'del']):
                 keyboard_row=2
             )
         )
-    if act == 'del':
-        logger.info(f'{cur_t1} администраторы {message.text}')
-        deactivate_admins = [
-            {
-                'user_id': user.id,
-                'username': user.username
-            } for user in incom_users
-        ]
-        await update_users(
-            user_id=message.from_user.id,
-            users=deactivate_admins,
-            is_active=False
-        )
     else:
-        logger.info(f'{cur_t1} администраторы {message.text}')
-        added_admins = [
-            {
-                'user_id': user.id,
-                'username': user.username
-            } for user in incom_users
-        ]
-        await add_users(
-            user_id=message.from_user.id,
-            users=added_admins,
-            is_superuser=False,
-            is_admin=True,
-            is_active=True
-        )
-        await client.send_message(
-            message.chat.id,
-            f'Администраторы {message.text} успешно {cur_done}.',
-            reply_markup=dinamic_keyboard(
-                objs=bot_keys[:3],
-                attr_name='key_name',
-                keyboard_row=2
+        if act == 'del':
+            logger.info(f'{cur_t1} администраторы {message.text}')
+            deactivate_admins = [
+                {
+                    'user_id': user.id,
+                    'username': user.username
+                } for user in incom_users
+            ]
+            await update_users(
+                user_id=message.from_user.id,
+                users=deactivate_admins,
+                is_active=False
             )
-        )
-        logger.info(
-            f'Администраторы {message.text} успешно {cur_done}'
-        )
+        else:
+            logger.info(f'{cur_t1} администраторы {message.text}')
+            added_admins = [
+                {
+                    'user_id': user.id,
+                    'username': user.username
+                } for user in incom_users
+            ]
+            await add_users(
+                user_id=message.from_user.id,
+                users=added_admins,
+                is_superuser=False,
+                is_admin=True,
+                is_active=True
+            )
+            await client.send_message(
+                message.chat.id,
+                f'Администраторы {message.text} успешно {cur_done}.',
+                reply_markup=dinamic_keyboard(
+                    objs=bot_keys[:3],
+                    attr_name='key_name',
+                    keyboard_row=2
+                )
+            )
+            logger.info(
+                f'Администраторы {message.text} успешно {cur_done}'
+            )
 
 
 async def add_admin(client, message):
