@@ -1,4 +1,5 @@
 from enum import Enum
+import re
 
 from pyrogram import Client, filters
 from pyrogram.errors.exceptions.bad_request_400 import (UsernameNotOccupied,
@@ -8,12 +9,12 @@ from pyrogram.types import ReplyKeyboardRemove, messages_and_media
 from assistants.assistants import dinamic_keyboard
 from buttons import bot_keys
 from logic import (choise_channel, add_admin, del_admin,
-                   run_collect_analitics, set_period)
+                   run_collect_analitics)
 from services.telegram_service import ChatUserInfo
 from services.google_api_service import get_report
 from permissions.permissions import check_authorization
-from services.telegram_service import ChatUserInfo
 from settings import Config, configure_logging
+
 
 logger = configure_logging()
 
@@ -24,6 +25,7 @@ class Commands(Enum):
     choise_channel = 'Выбрать телеграм канал'
     set_period = 'Установить период сбора данных'
     run_collect_analitics = 'Начать сбор аналитики'
+    user_period = 'Свой вариант'
 
 
 class BotManager:
@@ -145,6 +147,11 @@ async def choise_channel_cmd(
     """Находит все каналы владельца."""
 
     logger.info('Выбираем телеграм канал')
+    await client.send_message(
+            message.chat.id,
+            'Идёт процесс получения каналов, пожалуйста, подождите...',
+            reply_markup=ReplyKeyboardRemove()
+        )
     if manager.owner_or_admin == 'owner' or manager.owner_or_admin == 'admin':
         await choise_channel(client, message)
         manager.choise_channel_flag = True
@@ -160,17 +167,31 @@ async def set_period_cmd(
 
     logger.info('Устананавливаем период сбора данных')
     if manager.owner_or_admin == 'owner' or manager.owner_or_admin == 'admin':
-        await set_period(client, message)
-        manager.set_period_flag = True
         await client.send_message(
             message.chat.id,
-            'Для запуска сбора статистики нажмите кнопку.',
+            'Установите период опроса списка пользователей группы:',
             reply_markup=dinamic_keyboard(
-                objs=[bot_keys[4]],
+                objs=bot_keys[8:],
                 attr_name='key_name',
                 keyboard_row=2
             )
         )
+        manager.set_period_flag = True
+
+
+@bot_1.on_message(filters.regex(Commands.user_period.value))
+async def set_user_period(
+    client: Client,
+    message: messages_and_media.message.Message
+):
+    """Устанавливает пользовательское время периода опроса."""
+
+    logger.info('Пользователь вручную выбирает время опроса')
+    await client.send_message(
+        message.chat.id,
+        'Укажите произвольное время в часах:',
+        reply_markup=ReplyKeyboardRemove()
+    )
 
 
 @bot_1.on_message(filters.regex(Commands.run_collect_analitics.value))
@@ -241,8 +262,16 @@ async def all_incomming_messages(
         manager.choise_channel_flag = False
 
     elif manager.set_period_flag:
-        print('Здесь должна быть функция выбора периодичности')
-        period = 60  # например 60 минут
+        logger.info('Проверка и сохранение периода опроса в manager')
+        period = re.search('\d{,3}', message.text).group()
+        if not period:
+            await client.send_message(
+                message.chat.id,
+                'Проверьте правильность периода, должно быть целое число!\n'
+                'Укажите произвольное время в часах:',
+                reply_markup=ReplyKeyboardRemove()
+            )
+            return
         await client.send_message(
             message.chat.id,
             'Для запуска сбора статистики нажмите кнопку.',
@@ -254,6 +283,7 @@ async def all_incomming_messages(
         )
         manager.period = period
         manager.set_period_flag = False
+        logger.info(f'Выбран период опроса {manager.period}')
 
     else:
         await client.send_message(
@@ -266,6 +296,7 @@ async def all_incomming_messages(
                 keyboard_row=2
             )
         )
+        manager.owner_or_admin = ''
 
 
 if __name__ == '__main__':

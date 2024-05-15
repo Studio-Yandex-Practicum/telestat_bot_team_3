@@ -82,9 +82,10 @@ def dinamic_keyboard(objs, attr_name, keyboard_row=2):
             keyboard = ReplyKeyboardMarkup(
                 keyboard=btn_many,
                 resize_keyboard=True)
-        logger.info('Динамическая клавиатура сформирована успешно.')
     except ReplyMarkupInvalid as e:
         logger.error(f'Ошибка клавиатуры:\n {e}')
+        return False
+    logger.info('Динамическая клавиатура сформирована успешно.')
     return keyboard
 
 

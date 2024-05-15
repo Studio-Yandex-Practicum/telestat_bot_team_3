@@ -24,6 +24,27 @@ bot_keyboard = [
     },
     {
         'key_name': 'Формирование графика'
+    },
+    {
+        'key_name': '1 час'
+    },
+    {
+        'key_name': '5 часов'
+    },
+    {
+        'key_name': '10 часов'
+    },
+    {
+        'key_name': '15 часов'
+    },
+    {
+        'key_name': '24 часа'
+    },
+    {
+        'key_name': 'Свой вариант'
+    },
+    {
+        'key_name': "it's comming..."
     }
 ]
 
