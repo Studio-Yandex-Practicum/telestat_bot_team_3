@@ -209,6 +209,7 @@ async def get_report(
 ):
     """Создание отчета в Google spreadsheets."""
     async with Aiogoogle(service_account_creds=cred) as aiogoogle:
+        reports_url = []
         for chanal_name, data in data.items():
             # await delete_all_files_by_name(aiogoogle, name) # TODO Не забыть удалить перед релизом
             spreadsheetid = await get_spreadsheets_id(aiogoogle, chanal_name)
@@ -235,5 +236,7 @@ async def get_report(
                                             data,
                                             aiogoogle)
             logger.info(
-                f'Отчет сформирован: Таблица {chanal_name}, лист {sheet_title}'
+                f'Отчет сформирован: URL https://docs.google.com/spreadsheets/d/{spreadsheetid}'
             )
+            reports_url.append(f'https://docs.google.com/spreadsheets/d/{spreadsheetid}')
+        return reports_url
