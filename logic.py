@@ -130,6 +130,7 @@ async def choise_channel(client, message):
             logger.error(f'У пользователя {Config.USER_ACCOUNT_NAME} '
                          'слишком много контактов, сработала защита '
                          f'"Телеграм"/n {e}')
+            return channels
         except ChatAdminRequired:
             logger.error(f'Пользователю: {Config.BOT_ACCOUNT_NAME} '
                          'требуются права администратора.')
