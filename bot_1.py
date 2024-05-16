@@ -175,7 +175,7 @@ async def set_period_cmd(
             message.chat.id,
             'Установите период опроса списка пользователей группы:',
             reply_markup=dinamic_keyboard(
-                objs=bot_keys[8:],
+                objs=bot_keys[8:14],
                 attr_name='key_name',
                 keyboard_row=2
             )
@@ -292,7 +292,9 @@ async def all_incomming_messages(
     else:
         await client.send_message(
             message.chat.id,
-            'Упс, этого действия мы от вас не предвидели!',
+            'Упс, этого действия мы от вас не предвидели! \n'
+            'Или вы пытаетесь выполнить действие на которое '
+            'у вас нет прав, "Авторизуйтесь".',
             reply_markup=dinamic_keyboard(
                 objs=([bot_keys[2]],
                       bot_keys[:3])[manager.owner_or_admin == 'owner'],
