@@ -137,7 +137,7 @@ async def choise_channel(client, message):
                          f'{channel.chat.username}')
         except UserNotParticipant:
             logger.error(f'Пользователь: {Config.BOT_ACCOUNT_NAME} '
-                         'не является администратором или владельцем'
+                         'не является администратором или владельцем '
                          f'канала {channel.chat.username}.')
     if channels:
         await client.send_message(
