@@ -131,9 +131,12 @@ async def set_user_permissions(
         spreadsheetid: str,
         wrapper_services: Aiogoogle
 ) -> None:
-    permissions_body = {'type': 'user',
-                        'role': 'writer',
-                        'emailAddress': Config.EMAIL}
+    #На релизе поменять обратно.
+    # permissions_body = {'type': 'user',
+    #                     'role': 'writer',
+    #                     'emailAddress': Config.EMAIL}
+    permissions_body = {'type': 'anyone',
+                        'role': 'reader'}
     service = await wrapper_services.discover('drive', DRIVE_VER)
     await wrapper_services.as_service_account(
         service.permissions.create(
@@ -211,7 +214,7 @@ async def get_report(
     async with Aiogoogle(service_account_creds=cred) as aiogoogle:
         reports_url = []
         for chanal_name, data in data.items():
-            # await delete_all_files_by_name(aiogoogle, name) # TODO Не забыть удалить перед релизом
+            # await delete_all_files_by_name(aiogoogle, chanal_name) # TODO Не забыть удалить перед релизом
             spreadsheetid = await get_spreadsheets_id(aiogoogle, chanal_name)
             if spreadsheetid is None:
                 spreadsheetid, sheet_title = await spreadsheets_create(
