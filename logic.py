@@ -127,16 +127,18 @@ async def choise_channel(client, message):
                 channel.chat.username, Config.BOT_ACCOUNT_NAME))
             channels.append(channel.chat)
         except FloodWait as e:
-            logger.error(f'У пользователя {Config.BOT_ACCOUNT_NAME} '
+            logger.error(f'У пользователя {Config.USER_ACCOUNT_NAME} '
                          'слишком много контактов, сработала защита '
                          f'"Телеграм"\n {e}')
-            continue
+            break
         except ChatAdminRequired:
             logger.error(f'Пользователю: {Config.BOT_ACCOUNT_NAME} '
-                         'требуются права администратора.')
+                         'требуются права администратора на канал.'
+                         f'{channel.chat.username}')
         except UserNotParticipant:
             logger.error(f'Пользователь: {Config.BOT_ACCOUNT_NAME} '
-                         'не является владельцем канала.')
+                         'не является администратором или владельцем'
+                         f'канала {channel.chat.username}.')
     if channels:
         await client.send_message(
             message.chat.id,
