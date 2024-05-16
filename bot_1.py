@@ -294,13 +294,7 @@ async def all_incomming_messages(
             message.chat.id,
             'Упс, этого действия мы от вас не предвидели! \n'
             'Или вы пытаетесь выполнить действие на которое '
-            'у вас нет прав, "Авторизуйтесь", командой: /start',
-            reply_markup=dinamic_keyboard(
-                objs=([bot_keys[2]],
-                      bot_keys[:3])[manager.owner_or_admin == 'owner'],
-                attr_name='key_name',
-                keyboard_row=2
-            )
+            'у вас нет прав, "Авторизуйтесь", командой: /start'
         )
         manager.owner_or_admin = ''
 
