@@ -1,5 +1,7 @@
-from enum import Enum
+import datetime
 import re
+from asyncio import sleep
+from enum import Enum
 
 from pyrogram import Client, filters
 from pyrogram.errors.exceptions.bad_request_400 import (UsernameNotOccupied,
@@ -8,13 +10,13 @@ from pyrogram.types import ReplyKeyboardRemove, messages_and_media
 
 from assistants.assistants import dinamic_keyboard
 from buttons import bot_keys
-from logic import (choise_channel, add_admin, del_admin,
-                   run_collect_analitics)
-from services.telegram_service import ChatUserInfo
-from services.google_api_service import get_report
+from logic import (add_admin, choise_channel, del_admin,
+                   set_settings_for_analitics)
 from permissions.permissions import check_authorization
+from services.google_api_service import get_report
+from services.telegram_service import (ChatUserInfo, get_settings_from_report,
+                                       delete_settings_report)
 from settings import Config, configure_logging
-
 
 logger = configure_logging()
 
@@ -35,7 +37,8 @@ class BotManager:
     set_period_flag = False
     owner_or_admin = ''
     chanel = ''
-    period = 60
+    period = 10
+    work_period = 60
 
 
 bot_1 = Client(
@@ -127,19 +130,74 @@ async def command_del_admin(
 @bot_1.on_message(filters.regex(Commands.run_collect_analitics.value))
 async def generate_report(
     client: Client,
-    message: messages_and_media.message.Message
+    message: messages_and_media.message.Message,
+    manager=manager
 ):
     """Отправляет отчёт."""
 
-    chat = ChatUserInfo(bot_1, 'telestat_team')
-    logger.info('Бот начал работу')
-    report = await chat.create_report()
-    reports_url = await get_report(report)
-    for msg in reports_url:
+    try:
+        if not manager.chanel:
+            print('CHANNEL THIS:', manager.chanel)
+            # raise TypeError
+            return
+
+        settings = {
+            'usertg_id': (await client.get_users(message.from_user.username)).id,
+            'channel_name': manager.chanel,
+            'period': manager.period,
+            'work_period': datetime.datetime.now() + datetime.timedelta(seconds=manager.work_period),
+            'started_at': datetime.datetime.now(),
+            'run_status': True,
+            'run': True
+        }
+
+        await set_settings_for_analitics(client, message, settings)
+        period = manager.period
+        usertg_id = (await client.get_users(message.from_user.username)).id
+        channel_name = manager.chanel
+
         await client.send_message(
             message.chat.id,
-            msg
+            f'Бот выполняет сбор аналитики на канале: {channel_name} '
+            f'с заданым периодом {period}. Желаете запустить другой '
+            'канал? Выполните команду старт: /start',
+            reply_markup=ReplyKeyboardRemove()
         )
+
+        async def recursion_func(usertg_id, channel_name, period):
+            logger.info('Рекурсия началась')
+
+            # chat = ChatUserInfo(bot_1, channel_name)
+            # logger.info('Бот начал работу')
+            # report = await chat.create_report()
+            # reports_url = await get_report(report)
+            # for msg in reports_url:
+            #     await client.send_message(
+            #         message.chat.id,
+            #         msg
+            #     )
+
+            logger.info(f'Рекурсия, контрольная точка: {datetime.datetime.now()}')
+            await sleep(period)
+            db = await get_settings_from_report(
+                    {
+                        'usertg_id': usertg_id,
+                        'channel_name': channel_name
+                    })
+
+            if (not db.run or db.work_period <= datetime.datetime.now()):
+                logger.info('Удалили запись в базе данных вышли из рекурсии.')
+                await delete_settings_report('id', db.id)
+                return
+            await recursion_func(db.usertg_id, db.channel_name, db.period)
+
+        await recursion_func(usertg_id, channel_name, period)
+
+    # except TypeError:
+    #     logger.info('Запуск процесса сбора аналитики невозможен. '
+    #                 'Выбирите канал и попробуте снова!')
+    except KeyboardInterrupt:
+        pass
 
 
 @bot_1.on_message(filters.regex(Commands.choise_channel.value))
@@ -175,7 +233,7 @@ async def set_period_cmd(
             message.chat.id,
             'Установите период опроса списка пользователей группы:',
             reply_markup=dinamic_keyboard(
-                objs=bot_keys[8:],
+                objs=bot_keys[8:14],
                 attr_name='key_name',
                 keyboard_row=2
             )
@@ -196,18 +254,6 @@ async def set_user_period(
         'Укажите произвольное время в часах:',
         reply_markup=ReplyKeyboardRemove()
     )
-
-
-@bot_1.on_message(filters.regex(Commands.run_collect_analitics.value))
-async def run_collect_cmd(
-    client: Client,
-    message: messages_and_media.message.Message
-):
-    """Производит сбор данных в канале/группе."""
-
-    logger.info('Начинаем сбор данных')
-    if manager.owner_or_admin == 'owner' or manager.owner_or_admin == 'admin':
-        await run_collect_analitics(client, message)
 
 
 @bot_1.on_message()
@@ -267,7 +313,7 @@ async def all_incomming_messages(
 
     elif manager.set_period_flag:
         logger.info('Проверка и сохранение периода опроса в manager')
-        period = re.search('\d{,3}', message.text).group()
+        period = int(re.search('\d{,3}', message.text).group())
         if not period:
             await client.send_message(
                 message.chat.id,
@@ -285,20 +331,16 @@ async def all_incomming_messages(
                 keyboard_row=2
             )
         )
-        manager.period = period
+        manager.period = period * 3600
         manager.set_period_flag = False
         logger.info(f'Выбран период опроса {manager.period}')
 
     else:
         await client.send_message(
             message.chat.id,
-            'Упс, этого действия мы от вас не предвидели!',
-            reply_markup=dinamic_keyboard(
-                objs=([bot_keys[2]],
-                      bot_keys[:3])[manager.owner_or_admin == 'owner'],
-                attr_name='key_name',
-                keyboard_row=2
-            )
+            'Упс, этого действия мы от вас не ожидали! \n'
+            'Или вы пытаетесь выполнить действие на которое '
+            'у вас нет прав, "Авторизуйтесь", командой: /start'
         )
         manager.owner_or_admin = ''
 

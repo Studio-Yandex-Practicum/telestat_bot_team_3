@@ -10,7 +10,7 @@ from assistants.assistants import dinamic_keyboard
 from buttons import bot_keys
 from services.google_api_service import get_report
 from services.telegram_service import (ChatUserInfo, add_users, get_channels,
-                                       update_users)
+                                       update_users, set_settings_for_report)
 from settings import Config, configure_logging
 
 logger = configure_logging()
@@ -127,16 +127,19 @@ async def choise_channel(client, message):
                 channel.chat.username, Config.BOT_ACCOUNT_NAME))
             channels.append(channel.chat)
         except FloodWait as e:
-            logger.error(f'У пользователя {Config.BOT_ACCOUNT_NAME} '
+            logger.error(f'У пользователя {Config.USER_ACCOUNT_NAME} '
                          'слишком много контактов, сработала защита '
                          f'"Телеграм"\n {e}')
             break
         except ChatAdminRequired:
             logger.error(f'Пользователю: {Config.BOT_ACCOUNT_NAME} '
-                         'требуются права администратора.')
+                         'требуются права администратора на канал.'
+                         f'{channel.chat.username}')
         except UserNotParticipant:
-            logger.error(f'Пользователь: {Config.BOT_ACCOUNT_NAME} '
-                         'не является владельцем канала.')
+            logger.error(f'Пользователь: {Config.USER_ACCOUNT_NAME} '
+                         'не является владельцем, а пользователь: '
+                         f'{Config.BOT_ACCOUNT_NAME} администратором '
+                         f'канала {channel.chat.username}.')
     if channels:
         await client.send_message(
             message.chat.id,
@@ -164,10 +167,11 @@ async def choise_channel(client, message):
     return False
 
 
-async def run_collect_analitics(client, message):
+async def set_settings_for_analitics(client, message, settings):
     await client.send_message(
-        message.chat.id, '...Начинаем сбор данных...'
+        message.chat.id, '...Сохраняем настройки...'
     )
+    print(await set_settings_for_report(settings))
 
 
 async def auto_generate_report(client, message, bot_1):
