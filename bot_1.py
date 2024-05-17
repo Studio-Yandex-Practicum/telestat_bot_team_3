@@ -313,7 +313,7 @@ async def all_incomming_messages(
 
     elif manager.set_period_flag:
         logger.info('Проверка и сохранение периода опроса в manager')
-        period = re.search('\d{,3}', message.text).group()
+        period = int(re.search('\d{,3}', message.text).group())
         if not period:
             await client.send_message(
                 message.chat.id,
