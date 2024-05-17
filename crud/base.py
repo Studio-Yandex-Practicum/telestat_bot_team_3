@@ -64,15 +64,18 @@ class CRUDBase:
 
     async def remove(
             self,
-            id: int,
+            attr_name,
+            attr_value,
             session: AsyncSession,
     ):
         """Удаление объекта из DB."""
 
+        if not attr_name or not attr_value:
+            return False
+
         await session.execute(
-            delete(
-                self.model).where(
-                    self.model.id == id)
+            delete(self.model).where(
+                getattr(self.model, attr_name) == attr_value)
         )
         await session.commit()
-        return f'Запись id:{id} была удалена из ДБ.'
+        return

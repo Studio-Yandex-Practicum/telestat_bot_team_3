@@ -5,7 +5,7 @@ from core.db import async_session, engine
 from crud.userstg import userstg_crud
 from crud.channel_settings import channel_settings_crud
 from permissions.permissions import check_authorization
-from settings import Config, configure_logging
+from settings import configure_logging
 
 logger = configure_logging()
 
@@ -273,4 +273,20 @@ async def get_settings_from_report(
     async with engine.connect() as session:
         return (await channel_settings_crud.get_settings_report(
             settings,
+            session))
+
+
+async def delete_settings_report(
+        attr_name,
+        attr_value
+):
+    """Удаление записи из базы данных по окончании рекурсии."""
+
+    if not attr_name or not attr_value:
+        return False
+
+    async with engine.connect() as session:
+        return (await channel_settings_crud.remove(
+            attr_name,
+            attr_value,
             session))

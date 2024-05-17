@@ -1,7 +1,7 @@
-from enum import Enum
-import re
 import datetime
+import re
 from asyncio import sleep
+from enum import Enum
 
 from pyrogram import Client, filters
 from pyrogram.errors.exceptions.bad_request_400 import (UsernameNotOccupied,
@@ -10,13 +10,13 @@ from pyrogram.types import ReplyKeyboardRemove, messages_and_media
 
 from assistants.assistants import dinamic_keyboard
 from buttons import bot_keys
-from logic import (choise_channel, add_admin, del_admin,
+from logic import (add_admin, choise_channel, del_admin,
                    set_settings_for_analitics)
-from services.telegram_service import ChatUserInfo, get_settings_from_report
-from services.google_api_service import get_report
 from permissions.permissions import check_authorization
+from services.google_api_service import get_report
+from services.telegram_service import (ChatUserInfo, get_settings_from_report,
+                                       delete_settings_report)
 from settings import Config, configure_logging
-
 
 logger = configure_logging()
 
@@ -138,7 +138,8 @@ async def generate_report(
     try:
         if not manager.chanel:
             print('CHANNEL THIS:', manager.chanel)
-            raise TypeError
+            # raise TypeError
+            return
 
         settings = {
             'usertg_id': (await client.get_users(message.from_user.username)).id,
@@ -155,9 +156,18 @@ async def generate_report(
         usertg_id = (await client.get_users(message.from_user.username)).id
         channel_name = manager.chanel
 
-        async def recursion_func(usertg_id, channel_name, period):
+        await client.send_message(
+            message.chat.id,
+            f'Бот выполняет сбор аналитики на канале: {channel_name} '
+            f'с заданым периодом {period}. Желаете запустить другой '
+            'канал? Выполните команду старт: /start',
+            reply_markup=ReplyKeyboardRemove()
+        )
 
-            # chat = ChatUserInfo(bot_1, 'telestat_team')
+        async def recursion_func(usertg_id, channel_name, period):
+            logger.info('Рекурсия началась')
+
+            # chat = ChatUserInfo(bot_1, channel_name)
             # logger.info('Бот начал работу')
             # report = await chat.create_report()
             # reports_url = await get_report(report)
@@ -167,7 +177,7 @@ async def generate_report(
             #         msg
             #     )
 
-            print(datetime.datetime.now())
+            logger.info(f'Рекурсия, контрольная точка: {datetime.datetime.now()}')
             await sleep(period)
             db = await get_settings_from_report(
                     {
@@ -177,6 +187,7 @@ async def generate_report(
 
             if (not db.run or db.work_period <= datetime.datetime.now()):
                 logger.info('Удалили запись в базе данных вышли из рекурсии.')
+                await delete_settings_report('usertg_id', db.usertg_id)
                 return
             await recursion_func(db.usertg_id, db.channel_name, db.period)
 
