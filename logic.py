@@ -211,7 +211,6 @@ async def get_run_status(channel):
             attr_value=channel,
             session=session
         )
-        print('ПРИНТУЕМ СТАТУСЫ')
         return obj_channel.run
 
 

@@ -1,5 +1,3 @@
-from asyncio import sleep
-import datetime
 from functools import wraps
 
 from pyrogram import Client
@@ -7,7 +5,6 @@ from pyrogram.types import KeyboardButton, ReplyKeyboardMarkup
 from pyrogram.errors.exceptions.bad_request_400 import ReplyMarkupInvalid
 
 from crud.userstg import userstg_crud
-from logic import get_run_status
 from settings import Config, logger
 
 user_bot = Client(
@@ -105,14 +102,3 @@ def get_user_session(func):
             await user_bot.stop()
             logger.info('Сессия от имени пользователя закрыта.')
     return wrapper
-
-
-async def custom_sleep(channel, period):
-    time_now = datetime.datetime.now()
-    time_next = datetime.datetime.now() + datetime.timedelta(seconds=period)
-    while time_next > time_now:
-        run_status = await get_run_status(channel)
-        if run_status:
-            await sleep(60)
-        else:
-            return

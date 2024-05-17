@@ -30,7 +30,7 @@ class Config(object):
     TOKEN_URI = os.environ['TOKEN_URI']
     AUTH_PROVIDER_X509_CERT_URL = os.environ['AUTH_PROVIDER_X509_CERT_URL']
     CLIENT_X509_CERT_URL = os.environ['CLIENT_X509_CERT_URL']
-    EMAIL1 = os.environ['EMAIL1']
+    EMAIL = os.environ['EMAIL']
 
 
 def configure_logging() -> Logger:
