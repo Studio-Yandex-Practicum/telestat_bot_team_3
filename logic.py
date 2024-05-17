@@ -214,16 +214,21 @@ async def get_run_status(channel):
         return obj_channel.run
 
 
-async def set_channel_stop_attr(channel):
+async def set_channel_data(channel, period=None):
     async with engine.connect() as session:
-        obj = {
-            'run_status': False,
-            'run': False
-        }
-        channels = await channel_settings_crud.set_update(
+        if period:
+            obj = {
+                'period': period
+            }
+        else:
+            obj = {
+                'run_status': False,
+                'run': False
+            }
+        channel = await channel_settings_crud.set_update(
             attr_name='channel_name',
             attr_value=channel,
             obj_in=obj,
             session=session
         )
-        return channels
+        return channel

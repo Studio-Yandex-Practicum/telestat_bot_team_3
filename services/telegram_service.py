@@ -34,7 +34,6 @@ class ChatUserInfo():
             async for subscriber in self.bot.get_chat_members(self.group_name, filter=enums.ChatMembersFilter.SEARCH, query=i):
                 if subscriber not in subsribers:
                     subsribers.append(subscriber)
-        # logger.info(subscriber)
         return subsribers
 
     async def get_chat_members_count(self):
