@@ -211,7 +211,8 @@ async def get_run_status(channel):
             attr_value=channel,
             session=session
         )
-        return obj_channel.run
+        if obj_channel:
+            return obj_channel.run
 
 
 async def set_channel_data(channel, period=None):

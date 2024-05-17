@@ -199,18 +199,18 @@ async def generate_report(
             )
 
         logger.info(f'Рекурсия, контрольная точка: {datetime.datetime.now()}')
-        await custom_sleep(channel_name, period)
         db = await get_settings_from_report(
                 {
                     'usertg_id': usertg_id,
                     'channel_name': channel_name
                 })
-
-        if (not db.run or db.work_period <= datetime.datetime.now()):
-            logger.info('Удалили запись в базе данных вышли из рекурсии.')
-            await delete_settings_report('id', db.id)
-            return
-        await recursion_func(db.usertg_id, db.channel_name, db.period)
+        if db:
+            await custom_sleep(channel_name, period)
+            if (not db.run or db.work_period <= datetime.datetime.now()):
+                logger.info('Удалили запись в базе данных вышли из рекурсии.')
+                await delete_settings_report('id', db.id)
+                return
+            await recursion_func(db.usertg_id, db.channel_name, db.period)
 
     await recursion_func(usertg_id, channel_name, period)
 
@@ -390,6 +390,7 @@ async def all_incomming_messages(
         channel = message.text
         await set_channel_data(channel)
         logger.info(f'Сбор канала {channel} остановлен')
+        await delete_settings_report('channel_name', channel)
         await client.send_message(
             message.chat.id,
             f'Остановлен сбор аналитики канала {channel}',
