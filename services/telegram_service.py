@@ -256,7 +256,6 @@ async def set_settings_for_report(
     if not settings:
         return False
 
-    print(settings)
     async with async_session() as session:
         async with engine.connect():
             return await channel_settings_crud.create(settings, session)
@@ -285,8 +284,9 @@ async def delete_settings_report(
     if not attr_name or not attr_value:
         return False
 
-    async with engine.connect() as session:
-        return (await channel_settings_crud.remove(
-            attr_name,
-            attr_value,
-            session))
+    async with async_session() as session:
+        async with engine.connect():
+            return (await channel_settings_crud.remove(
+                attr_name,
+                attr_value,
+                session))

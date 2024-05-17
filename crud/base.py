@@ -72,6 +72,8 @@ class CRUDBase:
 
         if not attr_name or not attr_value:
             return False
+        
+        print(attr_name, attr_value)
 
         await session.execute(
             delete(self.model).where(

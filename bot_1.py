@@ -187,7 +187,7 @@ async def generate_report(
 
             if (not db.run or db.work_period <= datetime.datetime.now()):
                 logger.info('Удалили запись в базе данных вышли из рекурсии.')
-                await delete_settings_report('usertg_id', db.usertg_id)
+                await delete_settings_report('id', db.id)
                 return
             await recursion_func(db.usertg_id, db.channel_name, db.period)
 
