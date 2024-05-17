@@ -14,7 +14,7 @@ class ChannelSettings(Base):
         ForeignKey(
             'userstg.user_id',
             ondelete='CASCADE'))
-    channel_name = Column(String(100), nullable=False)
+    channel_name = Column(String(100), nullable=False, unique=True)
     period = Column(Integer, default=3600)
     work_period = Column(DateTime, nullable=False)
     remaining_work_time = Column(DateTime)
