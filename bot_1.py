@@ -1,5 +1,7 @@
 from enum import Enum
 import re
+import datetime
+from asyncio import sleep
 
 from pyrogram import Client, filters
 from pyrogram.errors.exceptions.bad_request_400 import (UsernameNotOccupied,
@@ -9,8 +11,8 @@ from pyrogram.types import ReplyKeyboardRemove, messages_and_media
 from assistants.assistants import dinamic_keyboard
 from buttons import bot_keys
 from logic import (choise_channel, add_admin, del_admin,
-                   run_collect_analitics)
-from services.telegram_service import ChatUserInfo
+                   set_settings_for_analitics)
+from services.telegram_service import ChatUserInfo, get_settings_from_report
 from services.google_api_service import get_report
 from permissions.permissions import check_authorization
 from settings import Config, configure_logging
@@ -35,7 +37,8 @@ class BotManager:
     set_period_flag = False
     owner_or_admin = ''
     chanel = ''
-    period = 60
+    period = 10
+    work_period = 60
 
 
 bot_1 = Client(
@@ -127,19 +130,63 @@ async def command_del_admin(
 @bot_1.on_message(filters.regex(Commands.run_collect_analitics.value))
 async def generate_report(
     client: Client,
-    message: messages_and_media.message.Message
+    message: messages_and_media.message.Message,
+    manager=manager
 ):
     """Отправляет отчёт."""
 
-    chat = ChatUserInfo(bot_1, 'telestat_team')
-    logger.info('Бот начал работу')
-    report = await chat.create_report()
-    reports_url = await get_report(report)
-    for msg in reports_url:
-        await client.send_message(
-            message.chat.id,
-            msg
-        )
+    try:
+        if not manager.chanel:
+            print('CHANNEL THIS:', manager.chanel)
+            raise TypeError
+
+        settings = {
+            'usertg_id': (await client.get_users(message.from_user.username)).id,
+            'channel_name': manager.chanel,
+            'period': manager.period,
+            'work_period': datetime.datetime.now() + datetime.timedelta(seconds=manager.work_period),
+            'started_at': datetime.datetime.now(),
+            'run_status': True,
+            'run': True
+        }
+
+        await set_settings_for_analitics(client, message, settings)
+        period = manager.period
+        usertg_id = (await client.get_users(message.from_user.username)).id
+        channel_name = manager.chanel
+
+        async def recursion_func(usertg_id, channel_name, period):
+
+            # chat = ChatUserInfo(bot_1, 'telestat_team')
+            # logger.info('Бот начал работу')
+            # report = await chat.create_report()
+            # reports_url = await get_report(report)
+            # for msg in reports_url:
+            #     await client.send_message(
+            #         message.chat.id,
+            #         msg
+            #     )
+
+            print(datetime.datetime.now())
+            await sleep(period)
+            db = await get_settings_from_report(
+                    {
+                        'usertg_id': usertg_id,
+                        'channel_name': channel_name
+                    })
+
+            if (not db.run or db.work_period <= datetime.datetime.now()):
+                logger.info('Удалили запись в базе данных вышли из рекурсии.')
+                return
+            await recursion_func(db.usertg_id, db.channel_name, db.period)
+
+        await recursion_func(usertg_id, channel_name, period)
+
+    # except TypeError:
+    #     logger.info('Запуск процесса сбора аналитики невозможен. '
+    #                 'Выбирите канал и попробуте снова!')
+    except KeyboardInterrupt:
+        pass
 
 
 @bot_1.on_message(filters.regex(Commands.choise_channel.value))
@@ -196,18 +243,6 @@ async def set_user_period(
         'Укажите произвольное время в часах:',
         reply_markup=ReplyKeyboardRemove()
     )
-
-
-@bot_1.on_message(filters.regex(Commands.run_collect_analitics.value))
-async def run_collect_cmd(
-    client: Client,
-    message: messages_and_media.message.Message
-):
-    """Производит сбор данных в канале/группе."""
-
-    logger.info('Начинаем сбор данных')
-    if manager.owner_or_admin == 'owner' or manager.owner_or_admin == 'admin':
-        await run_collect_analitics(client, message)
 
 
 @bot_1.on_message()
@@ -285,7 +320,7 @@ async def all_incomming_messages(
                 keyboard_row=2
             )
         )
-        manager.period = period
+        manager.period = period * 3600
         manager.set_period_flag = False
         logger.info(f'Выбран период опроса {manager.period}')
 

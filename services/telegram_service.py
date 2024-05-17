@@ -3,6 +3,7 @@ from pyrogram import Client, enums
 from assistants.assistants import check_by_attr, get_user_session, user_bot
 from core.db import async_session, engine
 from crud.userstg import userstg_crud
+from crud.channel_settings import channel_settings_crud
 from permissions.permissions import check_authorization
 from settings import Config, configure_logging
 
@@ -241,6 +242,35 @@ async def update_users(
 
 
 async def del_users():
-    """Установка пользователя из ДБ."""
-
+    """Удаление пользователя из ДБ."""
     pass
+
+
+async def set_settings_for_report(
+    settings: dict
+):
+    """
+    Сохраняет установленные настройки для формирования отчёта
+    один пользователь много каналов.
+    """
+    if not settings:
+        return False
+
+    print(settings)
+    async with async_session() as session:
+        async with engine.connect():
+            return await channel_settings_crud.create(settings, session)
+
+
+async def get_settings_from_report(
+        settings: dict
+):
+    """Получение настроек для управления ботом."""
+
+    if not settings:
+        return False
+
+    async with engine.connect() as session:
+        return (await channel_settings_crud.get_settings_report(
+            settings,
+            session))

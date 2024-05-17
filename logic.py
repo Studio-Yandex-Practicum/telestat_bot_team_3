@@ -10,7 +10,7 @@ from assistants.assistants import dinamic_keyboard
 from buttons import bot_keys
 from services.google_api_service import get_report
 from services.telegram_service import (ChatUserInfo, add_users, get_channels,
-                                       update_users)
+                                       update_users, set_settings_for_report)
 from settings import Config, configure_logging
 
 logger = configure_logging()
@@ -167,10 +167,11 @@ async def choise_channel(client, message):
     return False
 
 
-async def run_collect_analitics(client, message):
+async def set_settings_for_analitics(client, message, settings):
     await client.send_message(
-        message.chat.id, '...Начинаем сбор данных...'
+        message.chat.id, '...Сохраняем настройки...'
     )
+    print(await set_settings_for_report(settings))
 
 
 async def auto_generate_report(client, message, bot_1):
