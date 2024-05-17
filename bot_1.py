@@ -1,24 +1,37 @@
+from asyncio import sleep
 import datetime
 import re
-from asyncio import sleep
 from enum import Enum
-
+from sqlalchemy.exc import IntegrityError
 from pyrogram import Client, filters
 from pyrogram.errors.exceptions.bad_request_400 import (UsernameNotOccupied,
                                                         UserNotParticipant)
 from pyrogram.types import ReplyKeyboardRemove, messages_and_media
 
-from assistants.assistants import dinamic_keyboard
+from assistants.assistants import dinamic_keyboard, DotNotationDict
 from buttons import bot_keys
 from logic import (add_admin, choise_channel, del_admin,
-                   set_settings_for_analitics)
+                   set_settings_for_analitics,
+                   get_channels_from_db, get_run_status, set_channel_stop_attr)
 from permissions.permissions import check_authorization
 from services.google_api_service import get_report
 from services.telegram_service import (ChatUserInfo, get_settings_from_report,
                                        delete_settings_report)
 from settings import Config, configure_logging
 
+
 logger = configure_logging()
+
+
+async def custom_sleep(channel, period):
+    time_now = datetime.datetime.now()
+    time_next = datetime.datetime.now() + datetime.timedelta(seconds=period)
+    while time_next > time_now:
+        run_status = await get_run_status(channel)
+        if run_status:
+            await sleep(60)
+        else:
+            return
 
 
 class Commands(Enum):
@@ -28,6 +41,7 @@ class Commands(Enum):
     set_period = 'Установить период сбора данных'
     run_collect_analitics = 'Начать сбор аналитики'
     user_period = 'Свой вариант'
+    stop_channel = 'Остановить сбор аналитики'
 
 
 class BotManager:
@@ -35,6 +49,7 @@ class BotManager:
     del_admin_flag = False
     choise_channel_flag = False
     set_period_flag = False
+    stop_channel_flag = True
     owner_or_admin = ''
     chanel = ''
     period = 10
@@ -66,7 +81,7 @@ async def command_start(
             message.chat.id,
             f'{message.chat.username} вы авторизованы как владелец!',
             reply_markup=dinamic_keyboard(
-                objs=bot_keys[:3],
+                objs=bot_keys[:3] + bot_keys[14:15],
                 attr_name='key_name',
                 keyboard_row=2
             )
@@ -78,7 +93,7 @@ async def command_start(
             message.chat.id,
             f'{message.chat.username} вы авторизованы как администратор бота!',
             reply_markup=dinamic_keyboard(
-                objs=[bot_keys[2]],
+                objs=bot_keys[2:3] + bot_keys[14:15],
                 attr_name='key_name',
                 keyboard_row=2
             )
@@ -137,8 +152,6 @@ async def generate_report(
 
     try:
         if not manager.chanel:
-            print('CHANNEL THIS:', manager.chanel)
-            # raise TypeError
             return
 
         settings = {
@@ -150,8 +163,7 @@ async def generate_report(
             'run_status': True,
             'run': True
         }
-
-        await set_settings_for_analitics(client, message, settings)
+        await set_settings_for_analitics(client, message, settings)        
         period = manager.period
         usertg_id = (await client.get_users(message.from_user.username)).id
         channel_name = manager.chanel
@@ -167,18 +179,18 @@ async def generate_report(
         async def recursion_func(usertg_id, channel_name, period):
             logger.info('Рекурсия началась')
 
-            # chat = ChatUserInfo(bot_1, channel_name)
-            # logger.info('Бот начал работу')
-            # report = await chat.create_report()
-            # reports_url = await get_report(report)
-            # for msg in reports_url:
-            #     await client.send_message(
-            #         message.chat.id,
-            #         msg
-            #     )
+            chat = ChatUserInfo(bot_1, channel_name)
+            logger.info('Бот начал работу')
+            report = await chat.create_report()
+            reports_url = await get_report(report)
+            for msg in reports_url:
+                await client.send_message(
+                    message.chat.id,
+                    msg
+                )
 
             logger.info(f'Рекурсия, контрольная точка: {datetime.datetime.now()}')
-            await sleep(period)
+            await custom_sleep(channel_name, period)
             db = await get_settings_from_report(
                     {
                         'usertg_id': usertg_id,
@@ -193,11 +205,20 @@ async def generate_report(
 
         await recursion_func(usertg_id, channel_name, period)
 
-    # except TypeError:
-    #     logger.info('Запуск процесса сбора аналитики невозможен. '
-    #                 'Выбирите канал и попробуте снова!')
-    except KeyboardInterrupt:
-        pass
+    except IntegrityError:
+        logger.info('Процесс сбора аналитики в этом канале уже запущен!')
+        await client.send_message(
+            message.chat.id,
+            f'Сбор аналитики в канале {manager.chanel} уже запущен!\n'
+            'Сначала остановите сбор аналитики в этом канале',
+            reply_markup=dinamic_keyboard(
+                objs=(
+                    [bot_keys[2:3] + bot_keys[14:15]],
+                    bot_keys[:3] + bot_keys[14:15]
+                )[manager.owner_or_admin == 'owner'],
+                attr_name='key_name'
+            )
+        )
 
 
 @bot_1.on_message(filters.regex(Commands.choise_channel.value))
@@ -254,6 +275,43 @@ async def set_user_period(
         'Укажите произвольное время в часах:',
         reply_markup=ReplyKeyboardRemove()
     )
+
+
+@bot_1.on_message(filters.regex(Commands.stop_channel.value))
+async def stop_channel(
+    client: Client,
+    message: messages_and_media.message.Message,
+    manager=manager
+):
+    """Функция для остановки запущенных процессов сбора аналитики в каналах."""
+    logger.info('Запущен процесс остановки сбора аналитики канала')
+    channel_btns = []
+    channels = get_channels_from_db()
+
+    if not channels:
+        await client.send_message(
+            message.chat.id,
+            'Нет запущеных задач по сбору аналитики!',
+            reply_markup=dinamic_keyboard(
+                objs=(
+                    [bot_keys[2:3] + bot_keys[14:15]],
+                    bot_keys[:3] + bot_keys[14:15]
+                )[manager.owner_or_admin == 'owner'],
+                attr_name='key_name'
+            )
+        )
+    for channel in await channels:
+        channel_btns.append(DotNotationDict({'channel': channel}))
+    print(channel_btns)
+    await client.send_message(
+        message.chat.id,
+        'Выберите канал для остановки сбора аналитики:',
+        reply_markup=dinamic_keyboard(
+            objs=channel_btns,
+            attr_name='channel'
+        )
+    )
+    manager.stop_channel_flag = True
 
 
 @bot_1.on_message()
@@ -335,6 +393,22 @@ async def all_incomming_messages(
         manager.set_period_flag = False
         logger.info(f'Выбран период опроса {manager.period}')
 
+    elif manager.stop_channel_flag:
+        channel = message.text
+        await set_channel_stop_attr(channel)
+        logger.info(f'Сбор канала {channel} остановлен')
+        await client.send_message(
+            message.chat.id,
+            f'Остановлен сбор аналитики канала {channel}',
+            reply_markup=dinamic_keyboard(
+                objs=(
+                    [bot_keys[2:3] + bot_keys[14:15]],
+                    bot_keys[:3] + bot_keys[14:15]
+                )[manager.owner_or_admin == 'owner'],
+                attr_name='key_name'
+            )
+        )
+        manager.stop_channel_flag = True
     else:
         await client.send_message(
             message.chat.id,

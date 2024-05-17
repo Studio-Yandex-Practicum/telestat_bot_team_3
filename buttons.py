@@ -44,8 +44,11 @@ bot_keyboard = [
         'key_name': 'Свой вариант'
     },
     {
+        'key_name': "Остановить сбор аналитики"
+    },
+    {
         'key_name': "it's comming..."
-    }
+    },
 ]
 
 bot_keys = []

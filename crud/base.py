@@ -47,8 +47,8 @@ class CRUDBase:
 
     async def set_update(
             self,
-            attr_name: int,
-            attr_value: int,
+            attr_name,
+            attr_value,
             obj_in: dict,
             session: AsyncSession,
     ):
