@@ -45,6 +45,7 @@ class Commands(Enum):
 
 
 class BotManager:
+    """Конфигурация глобальных настроек бота."""
     add_admin_flag = False
     del_admin_flag = False
     choise_channel_flag = False
@@ -74,7 +75,7 @@ async def command_start(
 ):
     """Обработчик команды на запуск бота по сбору данных."""
 
-    logger.info('Проверка на авторизацию')
+    logger.info('Проверка авторизации.')
 
     if await check_authorization(message.from_user.id, is_superuser=True):
         await client.send_message(
@@ -188,15 +189,15 @@ async def generate_report(
     async def recursion_func(usertg_id, channel_name, period):
         logger.info('Рекурсия началась')
 
-        chat = ChatUserInfo(bot_1, channel_name)
-        logger.info('Бот начал работу')
-        report = await chat.create_report()
-        reports_url = await get_report(report)
-        for msg in reports_url:
-            await client.send_message(
-                message.chat.id,
-                msg
-            )
+        # chat = ChatUserInfo(bot_1, channel_name)
+        # logger.info('Бот начал работу')
+        # report = await chat.create_report()
+        # reports_url = await get_report(report)
+        # for msg in reports_url:
+        #     await client.send_message(
+        #         message.chat.id,
+        #         msg
+        #     )
 
         logger.info(f'Рекурсия, контрольная точка: {datetime.datetime.now()}')
         db = await get_settings_from_report(
@@ -204,10 +205,12 @@ async def generate_report(
                     'usertg_id': usertg_id,
                     'channel_name': channel_name
                 })
-        if db:
-            await custom_sleep(channel_name, period)
+        if db is not None or db:
+            # await custom_sleep(channel_name, period)
+            await sleep(period)
             if (not db.run or db.work_period <= datetime.datetime.now()):
-                logger.info('Удалили запись в базе данных вышли из рекурсии.')
+                logger.info(f'Удаляем запись о канале: {db.channel_name} '
+                            'в базе данных, Бот закончил свою работу.')
                 await delete_settings_report('id', db.id)
                 return
             await recursion_func(db.usertg_id, db.channel_name, db.period)
