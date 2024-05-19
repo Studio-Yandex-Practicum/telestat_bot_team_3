@@ -60,7 +60,7 @@ async def command_start(
             message.chat.id,
             f'{message.chat.username} вы авторизованы как владелец!',
             reply_markup=dinamic_keyboard(
-                objs=bot_keys[:3] + bot_keys[14:15],
+                objs=bot_keys[:3],
                 attr_name='key_name',
                 keyboard_row=2
             )
@@ -72,7 +72,7 @@ async def command_start(
             message.chat.id,
             f'{message.chat.username} вы авторизованы как администратор бота!',
             reply_markup=dinamic_keyboard(
-                objs=bot_keys[2:3] + bot_keys[14:15],
+                objs=bot_keys[2:3],
                 attr_name='key_name',
                 keyboard_row=2
             )
