@@ -189,11 +189,11 @@ async def set_settings_for_analitics(client, message, settings):
     print(await set_settings_for_report(settings))
 
 
-async def auto_generate_report(client, message, bot_1):
+async def auto_generate_report(client, message, bot):
     await client.send_message(
         message.chat.id, '...Автоматическое формирование отчёта...'
     )
-    chat = ChatUserInfo(bot_1, 'vag_angar')
+    chat = ChatUserInfo(bot, 'vag_angar')
     logger.info('Бот начал работу')
     report = await chat.create_report()
     await get_report(report)

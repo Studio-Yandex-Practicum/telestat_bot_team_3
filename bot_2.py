@@ -125,6 +125,28 @@ async def command_del_admin(
         manager.del_admin_flag = True
 
 
+@bot_2.on_message(filters.regex(Commands.generate_report.value))
+async def command_generate_report(
+    client: Client,
+    message: messages_and_media.message.Message,
+    manager=manager
+):
+    """Генерирование отчёта вручную."""
+
+    await generate_report(client, message)
+
+
+@bot_2.on_message(filters.regex(Commands.auto_report.value))
+async def command_auto_generate_report(
+    client: Client,
+    message: messages_and_media.message.Message,
+    manager=manager
+):
+    """Автоматическое генерирование отчёта."""
+
+    await auto_generate_report(client, message, bot=bot_2)
+
+
 @bot_2.on_message()
 async def all_incomming_messages(
     client: Client,
