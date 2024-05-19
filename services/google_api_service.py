@@ -248,7 +248,7 @@ async def get_report(
             )
             async with async_session() as session:
                 async with engine.connect():
-                    report_crud.create(
+                    await report_crud.create(
                         {
                             'link': url,
                             'group': chanal_name
