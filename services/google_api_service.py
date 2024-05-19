@@ -3,7 +3,9 @@ from datetime import datetime
 from aiogoogle import Aiogoogle
 from aiogoogle.auth.creds import ServiceAccountCreds
 
-from settings import configure_logging, Config
+from core.db import async_session, engine
+from crud.report import report_crud
+from settings import Config, configure_logging
 
 logger = configure_logging()
 
@@ -73,7 +75,9 @@ async def delete_all_files_by_name(
     print(f"All files with name {chanal_name} delete.")
 
 
-async def spreadsheets_create(wrapper_services: Aiogoogle, chanal_name: str) -> str:
+async def spreadsheets_create(
+        wrapper_services: Aiogoogle,
+        chanal_name: str) -> str:
     now_date_time = datetime.now().strftime(FORMAT)
     service = await wrapper_services.discover('sheets', SHEETS_VER)
     sheet_title = f'report_{now_date_time}'
@@ -132,11 +136,11 @@ async def set_user_permissions(
         wrapper_services: Aiogoogle
 ) -> None:
     #На релизе поменять обратно.
-    # permissions_body = {'type': 'user',
-    #                     'role': 'writer',
-    #                     'emailAddress': Config.EMAIL}
-    permissions_body = {'type': 'anyone',
-                        'role': 'reader'}
+    permissions_body = {'type': 'user',
+                        'role': 'writer',
+                        'emailAddress': Config.EMAIL}
+    # permissions_body = {'type': 'anyone',
+    #                     'role': 'reader'}
     service = await wrapper_services.discover('drive', DRIVE_VER)
     await wrapper_services.as_service_account(
         service.permissions.create(
@@ -188,7 +192,7 @@ async def spreadsheets_update_value(
     logger.debug(
         'Подготовка информации о подписчиках для записи в таблицу завершена'
     )
-    
+
     update_body = {
         "valueInputOption": "USER_ENTERED",
         "data": [
@@ -242,6 +246,15 @@ async def get_report(
             logger.info(
                 f'Отчет по каналу {chanal_name} сформирован: URL {url}'
             )
+            async with async_session() as session:
+                async with engine.connect():
+                    report_crud.create(
+                        {
+                            'link': url,
+                            'group': chanal_name
+                        },
+                        session=session
+                    )
             reports_url.append(
                 f'Отчет по каналу {chanal_name} сформирован: {url}'
             )

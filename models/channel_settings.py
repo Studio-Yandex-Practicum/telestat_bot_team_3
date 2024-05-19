@@ -24,12 +24,14 @@ class ChannelSettings(Base):
     run = Column(Boolean, default=False)
 
     def __repr__(self) -> str:
-        return (f'{self.usertg_id}'
-                f'{self.channel_name},'
-                f'{self.period},'
-                f'{self.work_period},'
-                f'{self.created}'
-                f'{self.refreshed},'
-                f'{self.started_at},'
-                f'{self.run_status},'
-                f'{self.run}')
+        return (
+            f'{self.id}'
+            f'{self.usertg_id}'
+            f'{self.channel_name},'
+            f'{self.period},'
+            f'{self.work_period},'
+            f'{self.created}'
+            f'{self.refreshed},'
+            f'{self.started_at},'
+            f'{self.run_status},'
+            f'{self.run}')

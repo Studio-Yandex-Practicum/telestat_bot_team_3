@@ -1,15 +1,17 @@
 from enum import Enum
+import re
 from pyrogram import Client, filters
-from pyrogram.types import messages_and_media
+from pyrogram.types import messages_and_media, ReplyKeyboardRemove
 
 from settings import configure_logging
 from buttons import bot_keys
 from logic import (
-    add_admin, del_admin, auto_generate_report, generate_report, scheduling
+    add_admin, choise_channel, del_admin, auto_generate_report, generate_report, scheduling
 )
 from permissions.permissions import check_authorization
 from assistants.assistants import dinamic_keyboard
 from settings import Config
+from services.google_api_service import get_report
 
 
 class Commands(Enum):
@@ -33,7 +35,7 @@ class BotManager:
     """Конфигурация глобальных настроек бота."""
     add_admin_flag = False
     del_admin_flag = False
-    choise_channel_flag = False
+    choise_data_flag = False
     set_period_flag = False
     stop_channel_flag = True
     owner_or_admin = ''
@@ -83,46 +85,63 @@ async def command_start(
             )
 
 
+@bot_2.on_message(filters.regex(Commands.add_admin.value))
+async def command_add_admin(
+    client: Client,
+    message: messages_and_media.message.Message,
+    manager=manager
+):
+    """Добавление администратора в ДБ."""
 
-        # @bot_2.on_message()
-        # async def report_generation(
-        #     client: Client,
-        #     message: messages_and_media.message.Message
-        # ):
-        #     """Обработчик команд админки бота №2."""
+    if manager.owner_or_admin == 'owner':
+        logger.info('Добавляем администратора')
 
-        #     if message.text == Commands.add_admin.value:
-        #         logger.info('Добавляем администратора')
-        #         await add_admin(client, message)
-        #     elif message.text == Commands.del_admin.value:
-        #         logger.info('Удаляем администратора')
-        #         await del_admin(client, message)
+        await client.send_message(
+            message.chat.id,
+            'Укажите никнеймы пользователей, которых хотите добавить '
+            'в качестве администраторов, в формате: '
+            '@nickname1, @nickname2, @nickname3',
+            reply_markup=ReplyKeyboardRemove()
+        )
+        manager.add_admin_flag = True
 
-        #     elif message.text == Commands.auto_report.value:
-        #         logger.info('Автоматическое формирование отчёта')
-        #         await auto_generate_report(client, message)
 
-        #     @bot_1.on_message(filters.regex(Commands.generate_report.value))
-        #     async def generate_report(
-        #         client: Client,
-        #         message: messages_and_media.message.Message
-        #     ):
-        #         """Отправляет отчёт."""
+@bot_2.on_message(filters.regex(Commands.del_admin.value))
+async def command_del_admin(
+    client: Client,
+    message: messages_and_media.message.Message,
+    manager=manager
+):
+    """Блокирует администраторов бота в ДБ."""
 
-        #         chat = ChatUserInfo(bot_1, 'vag_angar')
-        #         logger.info('Бот начал работу')
-        #         print(await chat.get_full_user_info())
-        #         await client.send_message(message.chat.id, type(await chat.get_full_user_info()))
+    if manager.owner_or_admin == 'owner':
+        logger.info('Блокируем администратора(ов) бота')
+        await client.send_message(
+            message.chat.id,
+            'Укажите никнеймы администраторов, которых хотите деактивировать, '
+            'в формате @nickname1, @nickname2, @nickname3',
+            reply_markup=ReplyKeyboardRemove()
+        )
+        manager.del_admin_flag = True
 
-        #     elif message.text == Commands.generate_report.value:
-        #         logger.info('Формирование отчёта')
-        #         await generate_report(client, message)
 
-        #     elif message.text == Commands.scheduling.value:
-        #         logger.info('Формирование графика')
-        #         await scheduling(client, message)
+@bot_2.on_message()
+async def all_incomming_messages(
+    client: Client,
+    message: messages_and_media.message.Message,
+    manager=manager
+):
+    """Здесь обрабатываем все входящие сообщения."""
+
+    if manager.add_admin_flag:
+        await add_admin(client, message)
+        manager.add_admin_flag = False
+
+    elif manager.del_admin_flag:
+        await del_admin(client, message)
+        manager.del_admin_flag = False
 
 
 if __name__ == '__main__':
-    logger.info('Bot 2 started.')
+    logger.info('Bot 2 is started.')
     bot_2.run()
