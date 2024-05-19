@@ -79,6 +79,18 @@ async def manage_admin(client, message, act: Literal['add', 'del']):
                 users=deactivate_admins,
                 is_active=False
             )
+            await client.send_message(
+                message.chat.id,
+                f'Администраторы {message.text} успешно {cur_done}.',
+                reply_markup=dinamic_keyboard(
+                    objs=bot_keys[:3],
+                    attr_name='key_name',
+                    keyboard_row=2
+                )
+            )
+            logger.info(
+                f'Администраторы {message.text} успешно {cur_done}'
+            )
         else:
             logger.info(f'{cur_t1} администраторы {message.text}')
             added_admins = [
