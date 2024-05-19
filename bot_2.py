@@ -12,14 +12,18 @@ from permissions.permissions import check_authorization
 from assistants.assistants import dinamic_keyboard
 from settings import Config
 from services.google_api_service import get_report
+from pyrogram.errors.exceptions.bad_request_400 import (UsernameNotOccupied,
+                                                        UserNotParticipant)
+from services.telegram_service import ChatUserInfo
 
 
 class Commands(Enum):
     add_admin = 'Добавить администратора'
     del_admin = 'Удалить администратора'
     auto_report = 'Автоматическое формирование отчёта'
-    generate_report = 'Формирование отчёта'
-    scheduling = 'Формирование графика'
+    generate_report_cmd = 'Формирование отчёта'
+    scheduling_cmd = 'Формирование графика'
+    user_period = '60'
 
 
 logger = configure_logging()
@@ -62,7 +66,7 @@ async def command_start(
             message.chat.id,
             f'{message.chat.username} вы авторизованы как владелец!',
             reply_markup=dinamic_keyboard(
-                objs=bot_keys[:3] + bot_keys[14:15],
+                objs=bot_keys[:2] + bot_keys[5:7],
                 attr_name='key_name',
                 keyboard_row=2
             )
@@ -74,7 +78,7 @@ async def command_start(
             message.chat.id,
             f'{message.chat.username} вы авторизованы как администратор бота!',
             reply_markup=dinamic_keyboard(
-                objs=bot_keys[2:3] + bot_keys[14:15],
+                objs=bot_keys[5:7],
                 attr_name='key_name',
                 keyboard_row=2
             )
@@ -220,8 +224,8 @@ async def auto_report(
 #         manager.choise_channel_flag = True
 
 
-@bot_2.on_message(filters.regex(Commands.generate_report.value))
-async def generate_report(
+@bot_2.on_message(filters.regex(Commands.generate_report_cmd.value))
+async def generate_report_bot_2(
     client: Client,
     message: messages_and_media.message.Message,
     manager=manager
@@ -231,7 +235,7 @@ async def generate_report(
     logger.info('Выбираем данные для отчета')
 
     if manager.owner_or_admin == 'owner' or manager.owner_or_admin == 'admin':
-        await choise_channel()
+        await choise_channel(client, message)
         manager.choise_channel_flag = True
 
 
@@ -325,16 +329,37 @@ async def all_incomming_messages(
         manager.del_admin_flag = False
 
     elif manager.choise_channel_flag:
-        # выбираем канал, по которому хотим получить отчет
-        # Собираем данные с канала
-        # Формируем словарь data
-        data = {}  # формат словаря?
-        report_url = await get_report(data)  # получаем данные с гугл таблиц
-        await client.send_message(
-            message.chat.id,
-            report_url
-        )
-        manager.choise_channel_flag = False
+        try:
+            if ((await client.get_chat_member(
+                message.text,
+                Config.BOT_ACCOUNT_NAME)
+                    ).privileges.can_restrict_members):
+                manager.chanel = message.text
+        except UsernameNotOccupied as e:
+            logger.error(f'Название канала введено не корректно или не занято!\n {e}')
+            await client.send_message(
+                    message.chat.id,
+                    'Вероятно В ведённом канале "Бот" не зарегистрирован!',
+                    reply_markup=dinamic_keyboard(
+                        objs=[bot_keys[2]],
+                        attr_name='key_name'
+                    )
+                )
+        except UserNotParticipant as e:
+            logger.error(f'В ведённом канале "Бот" не зарегистрирован!\n {e}')
+            await client.send_message(
+                message.chat.id,
+                'Вероятно В ведённом канале "Бот" не зарегистрирован!',
+                reply_markup=dinamic_keyboard(
+                    objs=([bot_keys[2]],
+                          bot_keys[:3])[manager.owner_or_admin == 'owner'],
+                    attr_name='key_name'
+                )
+            )
+        else:
+            await generate_report(client, message, bot_2)
+        finally:
+            manager.choise_channel_flag = False
 
     elif manager.set_period_flag:
         logger.info('Проверка и сохранение периода опроса в manager')

@@ -188,8 +188,17 @@ async def auto_generate_report(client, message, bot_1):
     await client.send_message(message.chat.id, type(await chat.create_report()))
 
 
-async def generate_report(client, message):
+async def generate_report(client, message, bot):
     await client.send_message(message.chat.id, '...Формирование отчёта...')
+    chat = ChatUserInfo(bot, message.text)
+    logger.info('Бот начал работу')
+    report = await chat.create_report()
+    reports_url = await get_report(report)
+    for msg in reports_url:
+        await client.send_message(
+            message.chat.id,
+            msg
+        )
 
 
 async def scheduling(client, message):
