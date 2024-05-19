@@ -75,7 +75,9 @@ async def delete_all_files_by_name(
     print(f"All files with name {chanal_name} delete.")
 
 
-async def spreadsheets_create(wrapper_services: Aiogoogle, chanal_name: str) -> str:
+async def spreadsheets_create(
+        wrapper_services: Aiogoogle,
+        chanal_name: str) -> str:
     now_date_time = datetime.now().strftime(FORMAT)
     service = await wrapper_services.discover('sheets', SHEETS_VER)
     sheet_title = f'report_{now_date_time}'
@@ -134,11 +136,11 @@ async def set_user_permissions(
         wrapper_services: Aiogoogle
 ) -> None:
     #На релизе поменять обратно.
-    # permissions_body = {'type': 'user',
-    #                     'role': 'writer',
-    #                     'emailAddress': Config.EMAIL}
-    permissions_body = {'type': 'anyone',
-                        'role': 'reader'}
+    permissions_body = {'type': 'user',
+                        'role': 'writer',
+                        'emailAddress': Config.EMAIL}
+    # permissions_body = {'type': 'anyone',
+    #                     'role': 'reader'}
     service = await wrapper_services.discover('drive', DRIVE_VER)
     await wrapper_services.as_service_account(
         service.permissions.create(

@@ -53,8 +53,8 @@ class BotManager:
     stop_channel_flag = True
     owner_or_admin = ''
     chanel = ''
-    period = 10
-    work_period = 60
+    period = 120
+    work_period = 240
 
 
 bot_1 = Client(
@@ -117,8 +117,8 @@ async def command_add_admin(
         await client.send_message(
             message.chat.id,
             'Укажите никнеймы пользователей, которых хотите добавить '
-            'в качестве администраторов, в формате:'
-            'nickname1, nickname2, nickname3',
+            'в качестве администраторов, в формате: '
+            '@nickname1, @nickname2, @nickname3',
             reply_markup=ReplyKeyboardRemove()
         )
         manager.add_admin_flag = True
@@ -137,7 +137,7 @@ async def command_del_admin(
         await client.send_message(
             message.chat.id,
             'Укажите никнеймы администраторов, которых хотите деактивировать, '
-            'в формате nickname1, nickname2, nickname3',
+            'в формате @nickname1, @nickname2, @nickname3',
             reply_markup=ReplyKeyboardRemove()
         )
         manager.del_admin_flag = True
@@ -189,15 +189,15 @@ async def generate_report(
     async def recursion_func(usertg_id, channel_name, period):
         logger.info('Рекурсия началась')
 
-        # chat = ChatUserInfo(bot_1, channel_name)
-        # logger.info('Бот начал работу')
-        # report = await chat.create_report()
-        # reports_url = await get_report(report)
-        # for msg in reports_url:
-        #     await client.send_message(
-        #         message.chat.id,
-        #         msg
-        #     )
+        chat = ChatUserInfo(bot_1, channel_name)
+        logger.info('Бот начал работу')
+        report = await chat.create_report()
+        reports_url = await get_report(report)
+        for msg in reports_url:
+            await client.send_message(
+                message.chat.id,
+                msg
+            )
 
         logger.info(f'Рекурсия, контрольная точка: {datetime.datetime.now()}')
         db = await get_settings_from_report(
