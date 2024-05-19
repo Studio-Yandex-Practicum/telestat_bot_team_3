@@ -130,7 +130,7 @@ class ChatUserInfo():
                 continue
             if len(item) > 0:
                 data['avg'][key] = round(
-                    sum(item) / len(item), 2
+                    sum(item) / len(item)
                 )
         avg_results = {
             'Среднее количество просмотров': data['avg']['views'],
