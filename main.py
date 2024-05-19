@@ -1,10 +1,11 @@
 import asyncio
-
-from bot_1 import bot_1
-# from bot_2 import bot_2
-from settings import configure_logging
-from services.launcher import init_process
 import logging
+import subprocess
+from threading import Thread
+
+from services.launcher import init_process
+from settings import configure_logging
+
 logging.basicConfig(level=logging.INFO)
 # from core.base import Base
 # from core.db import engine
@@ -21,6 +22,9 @@ logger = configure_logging()
 #         await conn.run_sync(Base.metadata.create_all)
 
 
-loop = asyncio.get_event_loop()
-loop.run_until_complete(init_process())
-loop.run_forever(bot_1.run())
+# init_process()
+
+if __name__ == '__main__':
+
+    Thread(target=subprocess.run, args=['py bot_1.py']).start()
+    Thread(target=subprocess.run, args=['py bot_2.py']).start()
