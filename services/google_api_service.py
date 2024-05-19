@@ -3,7 +3,9 @@ from datetime import datetime
 from aiogoogle import Aiogoogle
 from aiogoogle.auth.creds import ServiceAccountCreds
 
-from settings import configure_logging, Config
+from core.db import async_session, engine
+from crud.report import report_crud
+from settings import Config, configure_logging
 
 logger = configure_logging()
 
@@ -188,7 +190,7 @@ async def spreadsheets_update_value(
     logger.debug(
         'Подготовка информации о подписчиках для записи в таблицу завершена'
     )
-    
+
     update_body = {
         "valueInputOption": "USER_ENTERED",
         "data": [
@@ -242,6 +244,15 @@ async def get_report(
             logger.info(
                 f'Отчет по каналу {chanal_name} сформирован: URL {url}'
             )
+            async with async_session() as session:
+                async with engine.connect():
+                    report_crud.create(
+                        {
+                            'link': url,
+                            'group': chanal_name
+                        },
+                        session=session
+                    )
             reports_url.append(
                 f'Отчет по каналу {chanal_name} сформирован: {url}'
             )
