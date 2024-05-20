@@ -200,10 +200,12 @@ async def all_incomming_messages(
         )
         manager.choise_report_flag = False
     elif message.text == 'CSV':
-        logger.info('Пришёл заказ на CSV файл.')
+        if manager.owner_or_admin == 'owner' or manager.owner_or_admin == 'admin':
+            logger.info('Пришёл заказ на CSV файл.')
 
     elif message.text == 'xlsx':
-        logger.info('Пришёл заказ на xlsx.')
+        if manager.owner_or_admin == 'owner' or manager.owner_or_admin == 'admin':
+            logger.info('Пришёл заказ на xlsx.')
 
     elif manager.choise_auto_report_flag:
         logger.info('Приняли команду на aвтоматическое формирование отчёта')
