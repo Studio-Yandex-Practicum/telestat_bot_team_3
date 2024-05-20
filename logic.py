@@ -8,9 +8,10 @@ from pyrogram.errors.exceptions.flood_420 import FloodWait
 
 from assistants.assistants import dinamic_keyboard
 from buttons import bot_keys
-from services.google_api_service import get_report
+from services.google_api_service import get_report, get_data_for_shedule
+from services.sheduling import build_shedule
 from services.telegram_service import (ChatUserInfo, add_users, get_channels,
-                                       update_users, set_settings_for_report)
+                                       update_users, set_settings_for_report,)
 from settings import Config, configure_logging
 from crud.channel_settings import channel_settings_crud
 from core.db import engine
@@ -204,8 +205,21 @@ async def generate_report(client, message):
     await client.send_message(message.chat.id, '...Формирование отчёта...')
 
 
-async def scheduling(client, message):
+async def scheduling(client, message, spreadsheetId):
     await client.send_message(message.chat.id, '...Формирование графика...')
+
+    data = await get_data_for_shedule(spreadsheetId)
+    await build_shedule(data[0], to_title='просмотров')
+    await build_shedule(data[1], to_title='реакций')
+    await build_shedule(data[2], to_title='репостов')
+    await client.send_media_group(
+        message.chat.id,
+        media=[
+            'График изменения просмотров',
+            'График изменения реакций',
+            'График изменения репостов',
+        ]
+    )
 
 
 async def get_channels_from_db():

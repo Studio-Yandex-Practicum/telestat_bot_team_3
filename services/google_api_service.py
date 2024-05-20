@@ -9,7 +9,7 @@ from settings import Config, configure_logging
 
 logger = configure_logging()
 
-FORMAT = '%Y/%m/%d-%H:%M:%S'
+FORMAT = '%Y_%m_%d-%H:%M:%S'
 ROW_COUNT = 1000
 COLUMN_COUNT = 12
 SHEETS_VER = 'v4'
@@ -259,3 +259,83 @@ async def get_report(
                 f'Отчет по каналу {chanal_name} сформирован: {url}'
             )
         return reports_url
+
+# async def list_files():
+#     async with Aiogoogle(service_account_creds=cred) as aiogoogle:
+#         service = await aiogoogle.discover('drive', 'v3')
+#         json_res = await aiogoogle.as_service_account(
+#             service.files.list(),
+#         )
+#         for file in json_res['files']:
+#             print(file['name'])
+
+
+async def get_spreadsheet_data(spreadsheetId):
+    """
+    Для одиночного отчета.
+    Получение данных по spreadsheetId
+    Возвращает словарь для формирования текстового отчета
+    """
+
+    async with Aiogoogle(service_account_creds=cred) as aiogoogle:
+        service = await aiogoogle.discover('sheets', SHEETS_VER)
+
+        data = (await aiogoogle.as_service_account(
+            service.spreadsheets.values.get(
+                spreadsheetId=spreadsheetId,
+                range='A1:B4'
+            )
+        ))['values']
+
+        return {
+            'avr_views': data[1][1],
+            'avr_reaction': data[2][1],
+            'avr_reposts': data[3][1]
+        }
+
+
+async def get_sheets_title(spreadsheetId):
+    """Получение списка тайтлов листов из файла."""
+
+    async with Aiogoogle(service_account_creds=cred) as aiogoogle:
+        service = await aiogoogle.discover('sheets', SHEETS_VER)
+
+        data = await aiogoogle.as_service_account(
+            service.spreadsheets.get(spreadsheetId=spreadsheetId)
+        )
+        sheet_titles = []
+        for sheet in data['sheets']:
+            sheet_titles.append(sheet['properties']['title'])
+        return sheet_titles
+
+
+async def get_data_from_sheet(sheet, spreadsheetId):
+    """Получение информации из листа."""
+
+    async with Aiogoogle(service_account_creds=cred) as aiogoogle:
+        service = await aiogoogle.discover('sheets', SHEETS_VER)
+
+        return (await aiogoogle.as_service_account(
+            service.spreadsheets.values.get(
+                spreadsheetId=spreadsheetId,
+                range=f'{sheet}!A1:B4'
+            )
+        ))
+
+
+async def get_data_for_shedule(spreadsheetId):
+    """Сбор информации для графиков."""
+
+    sheets = await get_sheets_title(spreadsheetId)
+    avr_views = {}
+    avr_reactions = {}
+    avr_reposts = {}
+
+    for sheet in sheets:
+        data_from_sheet = await get_data_from_sheet(sheet, spreadsheetId)
+        date = sheet.lstrip('report_')
+        avr_views[date] = data_from_sheet['values'][1][1]
+        avr_reactions[date] = data_from_sheet['values'][2][1]
+        avr_reposts[date] = data_from_sheet['values'][3][1]
+
+    return avr_views, avr_reactions, avr_reposts
