@@ -221,6 +221,7 @@ async def get_channel_report(client, message):
                     keyboard_row=4
                 )
             )
+            return db
         except IntegrityError:
             logger.error('У пользователя нет каналов сохранённых '
                          'в Spreadgheets Google.')

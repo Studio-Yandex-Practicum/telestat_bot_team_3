@@ -275,6 +275,20 @@ async def get_report(
 #             print(file['name'])
 
 
+async def get_one_spredsheet(spreadsheetId):
+    """Получает данные одного документа из Google."""
+
+    async with Aiogoogle(service_account_creds=cred) as aiogoogle:
+        service = await aiogoogle.discover('sheets', SHEETS_VER)
+
+        data = (await aiogoogle.as_service_account(
+            service.spreadsheets.get(
+                spreadsheetId=spreadsheetId
+            )
+        ))
+        return data
+
+
 async def get_spreadsheet_data(spreadsheetId):
     """
     Для одиночного отчета.

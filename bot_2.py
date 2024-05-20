@@ -11,7 +11,7 @@ from logic import (
 from permissions.permissions import check_authorization
 from assistants.assistants import dinamic_keyboard
 from settings import Config
-from services.google_api_service import get_report
+from services.google_api_service import get_report, get_one_spredsheet
 
 
 class Commands(Enum):
@@ -40,6 +40,8 @@ class BotManager:
     scheduling_flag = False
     owner_or_admin = ''
     channel = ''
+    link = ''
+    db = []
     period = 10
     work_period = 60
 
@@ -134,10 +136,8 @@ async def command_generate_report(
     """Создаёт отчёт вручную."""
 
     if manager.owner_or_admin == 'owner' or manager.owner_or_admin == 'admin':
-        await get_channel_report(client, message)
+        manager.db = await get_channel_report(client, message)
 
-
-        await generate_report(client, message)
         manager.choise_report_flag = True
 
 
@@ -185,10 +185,8 @@ async def all_incomming_messages(
 
     elif manager.choise_report_flag:
         logger.info('Приняли команду на формирование отчёта')
-        # if (manager.channel or
-        #         manager.channel != 'CSV' or
-        #         manager.channel != 'xlsx'):
-        #     manager.channel = message.text
+        if message.text:
+            manager.channel = message.text
         await client.send_message(
             message.chat.id,
             f'Вы выбрали канал: {message.text}\n'
@@ -202,6 +200,8 @@ async def all_incomming_messages(
     elif message.text == 'CSV':
         if manager.owner_or_admin == 'owner' or manager.owner_or_admin == 'admin':
             logger.info('Пришёл заказ на CSV файл.')
+            print(get_one_spredsheet(manager.link))
+            await generate_report(client, message)
 
     elif message.text == 'xlsx':
         if manager.owner_or_admin == 'owner' or manager.owner_or_admin == 'admin':
