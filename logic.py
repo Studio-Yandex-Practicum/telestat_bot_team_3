@@ -206,8 +206,8 @@ async def auto_generate_report(client, message, bot_1):
 async def get_channel_report(client, message):
     """Получение каналов из сохраненных в таблице репорт."""
     async with engine.connect() as session:
-        try:
-            db = await report_crud.get_all(session)
+        db = await report_crud.get_all(session)
+        if db is not None:
             channel = []
             for report in db:
                 channel.append(report)
@@ -222,7 +222,7 @@ async def get_channel_report(client, message):
                 )
             )
             return db
-        except IntegrityError:
+        else:
             logger.error('У пользователя нет каналов сохранённых '
                          'в Spreadgheets Google.')
             client.send_message(
