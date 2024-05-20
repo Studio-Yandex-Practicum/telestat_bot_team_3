@@ -201,8 +201,9 @@ async def all_incomming_messages(
         if manager.owner_or_admin == 'owner' or manager.owner_or_admin == 'admin':
             logger.info('Пришёл заказ на CSV файл.')
             for report in manager.db:
-                if report.group == message.text:
-                    print(get_one_spredsheet(report.link))
+                if report.group == manager.channel:
+                    print(report.link)
+                    print(await get_one_spredsheet(report.link))
             await generate_report(client, message)
 
     elif message.text == 'xlsx':
