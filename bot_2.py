@@ -133,8 +133,18 @@ async def command_generate_report(
 ):
     """Создаёт отчёт вручную."""
 
-    await generate_report(client, message)
-    manager.choise_report_flag = True
+    if manager.owner_or_admin == 'owner' or manager.owner_or_admin == 'admin':
+        await client.send_message(
+            message.chat.id,
+            'Выберете желаемый формат для сохранения файла на клавиатуре.',
+            reply_markup=dinamic_keyboard(
+                objs=bot_keys[15:17],
+                attr_name='key_name'
+            )
+        )
+
+        await generate_report(client, message)
+        manager.choise_report_flag = True
 
 
 @bot_2.on_message(filters.regex(Commands.auto_report.value))
@@ -145,8 +155,9 @@ async def command_auto_report(
 ):
     """Создаёт отчёт автоматически."""
 
-    await auto_report(client, message)
-    manager.choise_auto_report_flag = True
+    if manager.owner_or_admin == 'owner' or manager.owner_or_admin == 'admin':
+        await auto_report(client, message)
+        manager.choise_auto_report_flag = True
 
 
 @bot_2.on_message(filters.regex(Commands.scheduling.value))
@@ -157,8 +168,9 @@ async def command_sheduling(
 ):
     """Создаёт графики."""
 
-    await auto_report(client, message)
-    manager.scheduling_flag = True
+    if manager.owner_or_admin == 'owner' or manager.owner_or_admin == 'admin':
+        await auto_report(client, message)
+        manager.scheduling_flag = True
 
 
 @bot_2.on_message()

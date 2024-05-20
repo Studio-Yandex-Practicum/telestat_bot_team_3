@@ -47,6 +47,12 @@ bot_keyboard = [
         'key_name': "Остановить сбор аналитики"
     },
     {
+        'key_name': 'CSV'
+    },
+    {
+        'key_name': 'xlsx'
+    },
+    {
         'key_name': "it's comming..."
     },
 ]
