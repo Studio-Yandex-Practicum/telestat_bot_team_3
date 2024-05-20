@@ -204,6 +204,7 @@ async def auto_generate_report(client, message, bot_1):
 
 
 async def get_channel_report(client, message):
+    """Получение каналов из сохраненных в таблице репорт."""
     async with engine.connect() as session:
         try:
             db = await report_crud.get_all(session)
