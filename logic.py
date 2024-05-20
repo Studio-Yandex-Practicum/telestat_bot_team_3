@@ -205,6 +205,10 @@ async def generate_report(client, message):
     await client.send_message(message.chat.id, '...Формирование отчёта...')
 
 
+async def auto_report(client, message):
+    await client.send_message(message.chat.id, '...Автоматическое формирование отчёта...')
+
+
 async def scheduling(client, message, spreadsheetId):
     await client.send_message(message.chat.id, '...Формирование графика...')
 

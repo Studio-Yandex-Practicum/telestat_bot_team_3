@@ -2,6 +2,7 @@ from datetime import datetime
 
 from aiogoogle import Aiogoogle
 from aiogoogle.auth.creds import ServiceAccountCreds
+from sqlalchemy.exc import IntegrityError
 
 from core.db import async_session, engine
 from crud.report import report_crud
@@ -248,16 +249,20 @@ async def get_report(
             )
             async with async_session() as session:
                 async with engine.connect():
-                    report_crud.create(
-                        {
-                            'link': url,
-                            'group': chanal_name
-                        },
-                        session=session
-                    )
-            reports_url.append(
-                f'Отчет по каналу {chanal_name} сформирован: {url}'
-            )
+                    try:
+                        await report_crud.create(
+                            {
+                                'link': url,
+                                'group': chanal_name
+                            },
+                            session=session
+                        )
+                    except IntegrityError:
+                        logger.info(f'Ссылка {url} уже существует, не '
+                                    'записываем!')
+                reports_url.append(
+                    f'Отчет по каналу {chanal_name} сформирован: {url}'
+                )
         return reports_url
 
 # async def list_files():
