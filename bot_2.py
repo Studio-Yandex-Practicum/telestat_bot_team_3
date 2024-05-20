@@ -6,7 +6,7 @@ from pyrogram.types import messages_and_media, ReplyKeyboardRemove
 from settings import configure_logging
 from buttons import bot_keys
 from logic import (
-    add_admin, del_admin, auto_report, generate_report, scheduling
+    add_admin, del_admin, auto_report, generate_report, scheduling, get_channel_report
 )
 from permissions.permissions import check_authorization
 from assistants.assistants import dinamic_keyboard
@@ -134,14 +134,15 @@ async def command_generate_report(
     """Создаёт отчёт вручную."""
 
     if manager.owner_or_admin == 'owner' or manager.owner_or_admin == 'admin':
-        await client.send_message(
-            message.chat.id,
-            'Выберете желаемый формат для сохранения файла на клавиатуре.',
-            reply_markup=dinamic_keyboard(
-                objs=bot_keys[15:17],
-                attr_name='key_name'
-            )
-        )
+        await get_channel_report(client, message)
+        # await client.send_message(
+        #     message.chat.id,
+        #     'Выберете желаемый формат для сохранения файла на клавиатуре.',
+        #     reply_markup=dinamic_keyboard(
+        #         objs=bot_keys[15:17],
+        #         attr_name='key_name'
+        #     )
+        # )
 
         await generate_report(client, message)
         manager.choise_report_flag = True
@@ -190,6 +191,10 @@ async def all_incomming_messages(
         manager.del_admin_flag = False
     elif manager.choise_report_flag:
         logger.info('Приняли команду на формирование отчёта')
+        if message.text == 'CSV':
+            logger.info('Пришёл заказ на CSV файл.')
+        elif message.text == 'xlsx':
+            logger.info('Пришёл заказ на xlsx.')
         manager.choise_report_flag = False
     elif manager.choise_auto_report_flag:
         logger.info('Приняли команду на aвтоматическое формирование отчёта')
