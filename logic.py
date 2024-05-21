@@ -207,7 +207,7 @@ async def get_channel_report(client, message):
     """Получение каналов из сохраненных в таблице репорт."""
     async with engine.connect() as session:
         db = await report_crud.get_all(session)
-        if db is not None:
+        if db is not None and db:
             channel = []
             for report in db:
                 channel.append(report)
@@ -225,7 +225,7 @@ async def get_channel_report(client, message):
         else:
             logger.error('У пользователя нет каналов сохранённых '
                          'в Spreadgheets Google.')
-            client.send_message(
+            await client.send_message(
                 message.chat.id,
                 'У вас нет каналов сохранённых '
                 'в Spreadgheets Google.'

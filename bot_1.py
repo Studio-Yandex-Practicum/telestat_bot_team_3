@@ -101,6 +101,11 @@ async def command_start(
         )
         manager.owner_or_admin = 'admin'
         logger.debug(f'{message.chat.username} авторизован как администратор бота!')
+    else:
+        await client.send_message(
+            message.chat.id,
+            'У вас нет прав, вы не авторизованы, пожалуйста авторизуйтесь.'
+            )
 
 
 @bot_1.on_message(filters.regex(Commands.add_admin.value))

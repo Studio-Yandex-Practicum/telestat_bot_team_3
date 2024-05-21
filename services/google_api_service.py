@@ -253,7 +253,8 @@ async def get_report(
                         await report_crud.create(
                             {
                                 'link': url,
-                                'group': chanal_name
+                                'group': chanal_name,
+                                'sheet_id': spreadsheetid
                             },
                             session=session
                         )
@@ -275,18 +276,15 @@ async def get_report(
 #             print(file['name'])
 
 
-async def get_one_spredsheet(spreadsheetId):
+async def get_one_spreadsheet(group, path):
     """Получает данные одного документа из Google."""
 
     async with Aiogoogle(service_account_creds=cred) as aiogoogle:
-        service = await aiogoogle.discover('sheets', SHEETS_VER)
-
-        data = (await aiogoogle.as_service_account(
-            service.spreadsheets.get(
-                spreadsheetId=spreadsheetId
-            )
-        ))
-        return data
+        service = await aiogoogle.discover('drive', DRIVE_VER)
+        result = await aiogoogle.as_service_account(
+            service.files.get(fileId=group, download_file=path),
+        )
+        return result
 
 
 async def get_spreadsheet_data(spreadsheetId):

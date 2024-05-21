@@ -11,7 +11,7 @@ from logic import (
 from permissions.permissions import check_authorization
 from assistants.assistants import dinamic_keyboard
 from settings import Config
-from services.google_api_service import get_report, get_one_spredsheet
+from services.google_api_service import get_report, get_one_spreadsheet
 
 
 class Commands(Enum):
@@ -84,6 +84,11 @@ async def command_start(
         manager.owner_or_admin = 'admin'
         logger.debug(
             f'{message.chat.username} авторизован как администратор бота!'
+            )
+    else:
+        await client.send_message(
+            message.chat.id,
+            'У вас нет прав, вы не авторизованы, пожалуйста авторизуйтесь.'
             )
 
 
@@ -202,8 +207,10 @@ async def all_incomming_messages(
             logger.info('Пришёл заказ на CSV файл.')
             for report in manager.db:
                 if report.group == manager.channel:
-                    print(report.link)
-                    print(await get_one_spredsheet(report.link))
+                    print(report.link, report.group)
+                    await get_one_spreadsheet(
+                        report.sheet_id,
+                        '')
             await generate_report(client, message)
 
     elif message.text == 'xlsx':
