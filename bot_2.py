@@ -205,6 +205,9 @@ async def all_incomming_messages(
     elif message.text == 'CSV':
         if manager.owner_or_admin == 'owner' or manager.owner_or_admin == 'admin':
             logger.info('Пришёл заказ на CSV файл.')
+
+    elif message.text == 'xlsx':
+        if manager.owner_or_admin == 'owner' or manager.owner_or_admin == 'admin':
             for report in manager.db:
                 if report.group == manager.channel:
                     print(report.link, report.group)
@@ -213,9 +216,6 @@ async def all_incomming_messages(
                         f'downloads/{report.group}.xlsx'
                         )
             await generate_report(client, message)
-
-    elif message.text == 'xlsx':
-        if manager.owner_or_admin == 'owner' or manager.owner_or_admin == 'admin':
             logger.info('Пришёл заказ на xlsx.')
 
     elif manager.choise_auto_report_flag:
