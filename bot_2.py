@@ -214,7 +214,7 @@ async def all_incomming_messages(
                 if report.group == manager.channel:
                     await client.send_message(
                         message.chat.id,
-                        f'Пожалуйста подождите, ваш файл: {report.group} '
+                        f'Пожалуйста подождите, ваш файл: {report.group}.xlsx '
                         'загружается из пространства Google Drive...',
                         reply_markup=ReplyKeyboardRemove()
                         )
