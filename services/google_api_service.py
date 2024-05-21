@@ -276,14 +276,19 @@ async def get_report(
 #             print(file['name'])
 
 
-async def get_one_spreadsheet(group, path):
+async def get_one_spreadsheet(spreadsheetId, path):
     """Получает данные одного документа из Google."""
 
     async with Aiogoogle(service_account_creds=cred) as aiogoogle:
         service = await aiogoogle.discover('drive', DRIVE_VER)
         result = await aiogoogle.as_service_account(
-            service.files.get(fileId=group, download_file=path),
+            service.files.get(
+                fileId=spreadsheetId,
+                download_file=path,
+                alt='media'
+                ),
         )
+        print(result)
         return result
 
 

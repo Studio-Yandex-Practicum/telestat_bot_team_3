@@ -227,7 +227,7 @@ async def get_channel_report(client, message):
                          'в Spreadgheets Google.')
             await client.send_message(
                 message.chat.id,
-                'У вас нет каналов сохранённых '
+                'У вас нет информации о каналах сохранённой '
                 'в Spreadgheets Google.'
             )
 
