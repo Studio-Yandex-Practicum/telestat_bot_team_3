@@ -227,7 +227,7 @@ async def all_incomming_messages(
                         await client.send_message(
                             message.chat.id,
                             f'Пожалуйста подождите, ваш файл: {report.group}'
-                            '.xlsx загружается...'
+                            '.xlsx загружается в Телеграм...'
                         )
                         await client.send_document(
                             message.chat.id,
