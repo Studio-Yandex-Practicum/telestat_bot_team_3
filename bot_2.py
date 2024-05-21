@@ -205,7 +205,35 @@ async def all_incomming_messages(
         manager.choise_report_flag = False
     elif message.text == 'CSV':
         if manager.owner_or_admin == 'owner' or manager.owner_or_admin == 'admin':
-            logger.info('Пришёл заказ на CSV файл.')
+            logger.info('Готовим ваш CSV файл для отправки в Телеграм.')
+            for report in manager.db:
+                if report.group == manager.channel:
+                    await client.send_message(
+                        message.chat.id,
+                        f'Пожалуйста подождите, ваш файл: {report.group}.csv '
+                        'загружается из пространства Google Drive...',
+                        reply_markup=ReplyKeyboardRemove()
+                        )
+                    await get_one_spreadsheet(
+                        report.sheet_id,
+                        f'{Config.PATH_TO_DOWNLOADS}{report.group}',
+                        format='CSV'
+                        )
+                    if os.path.exists(
+                            f'{Config.PATH_TO_DOWNLOADS}{report.group}.csv'
+                            ):
+                        await client.send_message(
+                            message.chat.id,
+                            f'Пожалуйста подождите, ваш файл: {report.group}'
+                            '.CSV загружается в Телеграм...'
+                        )
+                        await client.send_document(
+                            message.chat.id,
+                            f'{Config.PATH_TO_DOWNLOADS}{report.group}.csv'
+                            )
+                    else:
+                        logger.error(f'При скачивании файла: {report.group}.'
+                                     'CSV с Google Drive чтото пошло не так!')
 
     elif message.text == 'xlsx':
         if manager.owner_or_admin == 'owner' or manager.owner_or_admin == 'admin':
@@ -220,7 +248,7 @@ async def all_incomming_messages(
                         )
                     await get_one_spreadsheet(
                         report.sheet_id,
-                        f'{Config.PATH_TO_DOWNLOADS}{report.group}.xlsx'
+                        f'{Config.PATH_TO_DOWNLOADS}{report.group}'
                         )
                     if os.path.exists(
                             f'{Config.PATH_TO_DOWNLOADS}{report.group}.xlsx'
@@ -237,7 +265,7 @@ async def all_incomming_messages(
                     else:
                         logger.error(f'При скачивании файла: {report.group}.'
                                      'xlsx с Google Drive чтото пошло не так!')
-            await generate_report(client, message)
+            # await generate_report(client, message)
 
     elif manager.choise_auto_report_flag:
         logger.info('Приняли команду на aвтоматическое формирование отчёта')

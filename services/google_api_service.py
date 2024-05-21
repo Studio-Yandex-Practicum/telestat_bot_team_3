@@ -1,5 +1,7 @@
+import csv
 from datetime import datetime
 from io import BytesIO
+import pandas as pd
 
 from aiogoogle import Aiogoogle
 from aiogoogle.auth.creds import ServiceAccountCreds
@@ -280,7 +282,9 @@ async def get_report(
 
 async def get_one_spreadsheet(
         spreadsheetId,
-        path: str):
+        path: str,
+        format: str = 'xlsx'
+        ):
     """Получает данные одного документа из Google."""
 
     async with Aiogoogle(service_account_creds=cred) as aiogoogle:
@@ -292,8 +296,12 @@ async def get_one_spreadsheet(
                 ),
         ))
         xlsx = load_workbook(filename=BytesIO(file))
-        xlsx.save(path)
-        return xlsx
+        xlsx.save(f'{path}.xlsx')
+        if format == 'CSV':
+            df = pd.DataFrame(pd.read_excel(f'{path}.xlsx'))
+            print(df)
+            df.to_csv(f'{path}.csv')
+        return file
 
 
 async def get_spreadsheet_data(spreadsheetId):
