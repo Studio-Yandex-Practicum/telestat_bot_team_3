@@ -215,7 +215,8 @@ async def all_incomming_messages(
                     await client.send_message(
                         message.chat.id,
                         f'Пожалуйста подождите, ваш файл: {report.group} '
-                        'загружается из пространства Google Drive...'
+                        'загружается из пространства Google Drive...',
+                        reply_markup=ReplyKeyboardRemove()
                         )
                     await get_one_spreadsheet(
                         report.sheet_id,
