@@ -216,13 +216,21 @@ async def all_incomming_messages(
                         report.sheet_id,
                         f'{Config.PATH_TO_DOWNLOADS}{report.group}.xlsx'
                         )
-                    if os.path.exists(f'{Config.PATH_TO_DOWNLOADS}{report.group}.xlsx'):
+                    if os.path.exists(
+                            f'{Config.PATH_TO_DOWNLOADS}{report.group}.xlsx'
+                            ):
+                        await client.send_message(
+                            message.chat.id,
+                            f'Пожалуйста подождите, ваш файл: {report.group}'
+                            '.xlsx загружается...'
+                        )
                         await client.send_document(
                             message.chat.id,
                             f'{Config.PATH_TO_DOWNLOADS}{report.group}.xlsx'
                             )
                     else:
-                        logger.error(f'При скачивании файла: {report.group}.xlsx с Google Drive чтото пошло не так!')
+                        logger.error(f'При скачивании файла: {report.group}.'
+                                     'xlsx с Google Drive чтото пошло не так!')
             await generate_report(client, message)
 
     elif manager.choise_auto_report_flag:
