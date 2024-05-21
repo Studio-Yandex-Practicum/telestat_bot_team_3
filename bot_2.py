@@ -1,5 +1,6 @@
 from enum import Enum
 import re
+import os
 from pyrogram import Client, filters
 from pyrogram.types import messages_and_media, ReplyKeyboardRemove
 
@@ -208,15 +209,21 @@ async def all_incomming_messages(
 
     elif message.text == 'xlsx':
         if manager.owner_or_admin == 'owner' or manager.owner_or_admin == 'admin':
+            logger.info('Готовим ваш xlsx файл для отправки в Телеграм.')
             for report in manager.db:
                 if report.group == manager.channel:
-                    print(report.link, report.group)
                     await get_one_spreadsheet(
                         report.sheet_id,
-                        f'downloads/{report.group}.xlsx'
+                        f'{Config.PATH_TO_DOWNLOADS}{report.group}.xlsx'
                         )
+                    if os.path.exists(f'{Config.PATH_TO_DOWNLOADS}{report.group}.xlsx'):
+                        await client.send_document(
+                            message.chat.id,
+                            f'{Config.PATH_TO_DOWNLOADS}{report.group}.xlsx'
+                            )
+                    else:
+                        logger.error(f'При скачивании файла: {report.group}.xlsx с Google Drive чтото пошло не так!')
             await generate_report(client, message)
-            logger.info('Пришёл заказ на xlsx.')
 
     elif manager.choise_auto_report_flag:
         logger.info('Приняли команду на aвтоматическое формирование отчёта')

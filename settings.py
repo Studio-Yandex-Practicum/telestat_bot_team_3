@@ -34,6 +34,8 @@ class Config(object):
     CLIENT_X509_CERT_URL = os.environ['CLIENT_X509_CERT_URL']
     EMAIL = os.environ['EMAIL']
 
+    PATH_TO_DOWNLOADS = os.environ['PATH_TO_DOWNLOADS']
+
 
 def configure_logging() -> Logger:
     """
