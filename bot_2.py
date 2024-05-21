@@ -212,6 +212,11 @@ async def all_incomming_messages(
             logger.info('Готовим ваш xlsx файл для отправки в Телеграм.')
             for report in manager.db:
                 if report.group == manager.channel:
+                    await client.send_message(
+                        message.chat.id,
+                        f'Пожалуйста подождите, ваш файл: {report.group} '
+                        'загружается из пространства Google Drive...'
+                        )
                     await get_one_spreadsheet(
                         report.sheet_id,
                         f'{Config.PATH_TO_DOWNLOADS}{report.group}.xlsx'
