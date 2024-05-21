@@ -1,7 +1,9 @@
 from datetime import datetime
+from io import BytesIO
 
 from aiogoogle import Aiogoogle
 from aiogoogle.auth.creds import ServiceAccountCreds
+from openpyxl import load_workbook
 from sqlalchemy.exc import IntegrityError
 
 from core.db import async_session, engine
@@ -276,20 +278,22 @@ async def get_report(
 #             print(file['name'])
 
 
-async def get_one_spreadsheet(spreadsheetId, path):
+async def get_one_spreadsheet(
+        spreadsheetId,
+        path: str):
     """Получает данные одного документа из Google."""
 
     async with Aiogoogle(service_account_creds=cred) as aiogoogle:
         service = await aiogoogle.discover('drive', DRIVE_VER)
-        result = await aiogoogle.as_service_account(
-            service.files.get(
+        file = (await aiogoogle.as_service_account(
+            service.files.export(
                 fileId=spreadsheetId,
-                download_file=path,
-                alt='media'
+                mimeType='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
                 ),
-        )
-        print(result)
-        return result
+        ))
+        xlsx = load_workbook(filename=BytesIO(file))
+        xlsx.save(path)
+        return xlsx
 
 
 async def get_spreadsheet_data(spreadsheetId):

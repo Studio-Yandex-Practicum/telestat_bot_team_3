@@ -210,7 +210,8 @@ async def all_incomming_messages(
                     print(report.link, report.group)
                     await get_one_spreadsheet(
                         report.sheet_id,
-                        f'downloads/{report.group}.xlsx')
+                        f'downloads/{report.group}.xlsx'
+                        )
             await generate_report(client, message)
 
     elif message.text == 'xlsx':
