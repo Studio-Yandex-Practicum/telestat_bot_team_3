@@ -1,17 +1,18 @@
 from enum import Enum
 import re
+import os
 from pyrogram import Client, filters
 from pyrogram.types import messages_and_media, ReplyKeyboardRemove
 
 from settings import configure_logging
 from buttons import bot_keys
 from logic import (
-    add_admin, choise_channel, del_admin, auto_generate_report, generate_report, scheduling
+    add_admin, del_admin, auto_report, generate_report, scheduling, get_channel_report
 )
 from permissions.permissions import check_authorization
 from assistants.assistants import dinamic_keyboard
 from settings import Config
-from services.google_api_service import get_report
+from services.google_api_service import get_report, get_one_spreadsheet
 
 
 class Commands(Enum):
@@ -35,11 +36,13 @@ class BotManager:
     """Конфигурация глобальных настроек бота."""
     add_admin_flag = False
     del_admin_flag = False
-    choise_data_flag = False
-    set_period_flag = False
-    stop_channel_flag = True
+    choise_report_flag = False
+    choise_auto_report_flag = False
+    scheduling_flag = False
     owner_or_admin = ''
-    chanel = ''
+    channel = ''
+    link = ''
+    db = []
     period = 10
     work_period = 60
 
@@ -62,7 +65,7 @@ async def command_start(
             message.chat.id,
             f'{message.chat.username} вы авторизованы как владелец!',
             reply_markup=dinamic_keyboard(
-                objs=bot_keys[:3],
+                objs=bot_keys[:2] + bot_keys[5:8],
                 attr_name='key_name',
                 keyboard_row=2
             )
@@ -74,7 +77,7 @@ async def command_start(
             message.chat.id,
             f'{message.chat.username} вы авторизованы как администратор бота!',
             reply_markup=dinamic_keyboard(
-                objs=bot_keys[2:3],
+                objs=bot_keys[5:8],
                 attr_name='key_name',
                 keyboard_row=2
             )
@@ -82,6 +85,11 @@ async def command_start(
         manager.owner_or_admin = 'admin'
         logger.debug(
             f'{message.chat.username} авторизован как администратор бота!'
+            )
+    else:
+        await client.send_message(
+            message.chat.id,
+            'У вас нет прав, вы не авторизованы, пожалуйста авторизуйтесь.'
             )
 
 
@@ -125,6 +133,46 @@ async def command_del_admin(
         manager.del_admin_flag = True
 
 
+@bot_2.on_message(filters.regex(Commands.generate_report.value))
+async def command_generate_report(
+    client: Client,
+    message: messages_and_media.message.Message,
+    manager=manager
+):
+    """Создаёт отчёт вручную."""
+
+    if manager.owner_or_admin == 'owner' or manager.owner_or_admin == 'admin':
+        manager.db = await get_channel_report(client, message)
+
+        manager.choise_report_flag = True
+
+
+@bot_2.on_message(filters.regex(Commands.auto_report.value))
+async def command_auto_report(
+    client: Client,
+    message: messages_and_media.message.Message,
+    manager=manager
+):
+    """Создаёт отчёт автоматически."""
+
+    if manager.owner_or_admin == 'owner' or manager.owner_or_admin == 'admin':
+        await auto_report(client, message)
+        manager.choise_auto_report_flag = True
+
+
+@bot_2.on_message(filters.regex(Commands.scheduling.value))
+async def command_sheduling(
+    client: Client,
+    message: messages_and_media.message.Message,
+    manager=manager
+):
+    """Создаёт графики."""
+
+    if manager.owner_or_admin == 'owner' or manager.owner_or_admin == 'admin':
+        await auto_report(client, message)
+        manager.scheduling_flag = True
+
+
 @bot_2.on_message()
 async def all_incomming_messages(
     client: Client,
@@ -140,6 +188,99 @@ async def all_incomming_messages(
     elif manager.del_admin_flag:
         await del_admin(client, message)
         manager.del_admin_flag = False
+
+    elif manager.choise_report_flag:
+        logger.info('Приняли команду на формирование отчёта')
+        if message.text:
+            manager.channel = message.text
+        await client.send_message(
+            message.chat.id,
+            f'Вы выбрали канал: {message.text}\n'
+            'Выберете желаемый формат для сохранения файла на клавиатуре.',
+            reply_markup=dinamic_keyboard(
+                objs=bot_keys[15:17],
+                attr_name='key_name'
+            )
+        )
+        manager.choise_report_flag = False
+    elif message.text == 'CSV':
+        if manager.owner_or_admin == 'owner' or manager.owner_or_admin == 'admin':
+            logger.info('Готовим ваш CSV файл для отправки в Телеграм.')
+            for report in manager.db:
+                if report.group == manager.channel:
+                    await client.send_message(
+                        message.chat.id,
+                        f'Пожалуйста подождите, ваш файл: {report.group}.csv '
+                        'загружается из пространства Google Drive...',
+                        reply_markup=ReplyKeyboardRemove()
+                        )
+                    await get_one_spreadsheet(
+                        report.sheet_id,
+                        f'{Config.PATH_TO_DOWNLOADS}{report.group}',
+                        format='CSV'
+                        )
+                    if os.path.exists(
+                            f'{Config.PATH_TO_DOWNLOADS}{report.group}.csv'
+                            ):
+                        await client.send_message(
+                            message.chat.id,
+                            f'Пожалуйста подождите, ваш файл: {report.group}'
+                            '.CSV загружается в Телеграм...'
+                        )
+                        await client.send_document(
+                            message.chat.id,
+                            f'{Config.PATH_TO_DOWNLOADS}{report.group}.csv'
+                            )
+                    else:
+                        logger.error(f'При скачивании файла: {report.group}.'
+                                     'CSV с Google Drive чтото пошло не так!')
+
+    elif message.text == 'xlsx':
+        if manager.owner_or_admin == 'owner' or manager.owner_or_admin == 'admin':
+            logger.info('Готовим ваш xlsx файл для отправки в Телеграм.')
+            for report in manager.db:
+                if report.group == manager.channel:
+                    await client.send_message(
+                        message.chat.id,
+                        f'Пожалуйста подождите, ваш файл: {report.group}.xlsx '
+                        'загружается из пространства Google Drive...',
+                        reply_markup=ReplyKeyboardRemove()
+                        )
+                    await get_one_spreadsheet(
+                        report.sheet_id,
+                        f'{Config.PATH_TO_DOWNLOADS}{report.group}'
+                        )
+                    if os.path.exists(
+                            f'{Config.PATH_TO_DOWNLOADS}{report.group}.xlsx'
+                            ):
+                        await client.send_message(
+                            message.chat.id,
+                            f'Пожалуйста подождите, ваш файл: {report.group}'
+                            '.xlsx загружается в Телеграм...'
+                        )
+                        await client.send_document(
+                            message.chat.id,
+                            f'{Config.PATH_TO_DOWNLOADS}{report.group}.xlsx'
+                            )
+                    else:
+                        logger.error(f'При скачивании файла: {report.group}.'
+                                     'xlsx с Google Drive чтото пошло не так!')
+            # await generate_report(client, message)
+
+    elif manager.choise_auto_report_flag:
+        logger.info('Приняли команду на aвтоматическое формирование отчёта')
+        manager.choise_auto_report_flag = False
+    elif manager.scheduling_flag:
+        logger.info('Приняли команду на создание графика.')
+        manager.scheduling_flag = False
+    else:
+        await client.send_message(
+            message.chat.id,
+            'Упс, этого действия мы от вас не ожидали! \n'
+            'Или вы пытаетесь выполнить действие на которое '
+            'у вас нет прав, "Авторизуйтесь", командой: /start'
+        )
+        manager.owner_or_admin = ''
 
 
 if __name__ == '__main__':

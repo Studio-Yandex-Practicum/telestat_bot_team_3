@@ -8,9 +8,10 @@ from core.db import Base
 class Report(Base):
     """Модель для хранения ссылок сформированных отчётов."""
 
-    link = Column(String(512), unique=True, index=True)
+    link = Column(String(512), unique=True, nullable=True)
     create = Column(DateTime, default=dt.now)
-    group = Column(String(100), nullable=False)
+    group = Column(String(100), nullable=False, index=True)
+    sheet_id = Column(String(100), nullable=False, unique=True)
 
     def __repr__(self) -> str:
         return (

@@ -5,6 +5,7 @@ from pyrogram.errors.exceptions.bad_request_400 import (ChatAdminRequired,
                                                         UsernameNotOccupied,
                                                         UserNotParticipant)
 from pyrogram.errors.exceptions.flood_420 import FloodWait
+from sqlalchemy.exc import IntegrityError
 
 from assistants.assistants import dinamic_keyboard
 from buttons import bot_keys
@@ -14,6 +15,7 @@ from services.telegram_service import (ChatUserInfo, add_users, get_channels,
                                        update_users, set_settings_for_report,)
 from settings import Config, configure_logging
 from crud.channel_settings import channel_settings_crud
+from crud.report import report_crud
 from core.db import engine
 
 
@@ -201,8 +203,41 @@ async def auto_generate_report(client, message, bot_1):
     await client.send_message(message.chat.id, type(await chat.create_report()))
 
 
+async def get_channel_report(client, message):
+    """Получение каналов из сохраненных в таблице репорт."""
+    async with engine.connect() as session:
+        db = await report_crud.get_all(session)
+        if db is not None and db:
+            channel = []
+            for report in db:
+                channel.append(report)
+            await client.send_message(
+                message.chat.id,
+                'Отчёт по какому каналу вы хотите получить? Выбирите '
+                'на клавиатуре.',
+                reply_markup=dinamic_keyboard(
+                    objs=channel,
+                    attr_name='group',
+                    keyboard_row=4
+                )
+            )
+            return db
+        else:
+            logger.error('У пользователя нет каналов сохранённых '
+                         'в Spreadgheets Google.')
+            await client.send_message(
+                message.chat.id,
+                'У вас нет информации о каналах сохранённой '
+                'в Spreadgheets Google.'
+            )
+
+
 async def generate_report(client, message):
     await client.send_message(message.chat.id, '...Формирование отчёта...')
+
+
+async def auto_report(client, message):
+    await client.send_message(message.chat.id, '...Автоматическое формирование отчёта...')
 
 
 async def scheduling(client, message, spreadsheetId):

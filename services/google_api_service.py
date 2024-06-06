@@ -1,7 +1,12 @@
+import csv
 from datetime import datetime
+from io import BytesIO
+import pandas as pd
 
 from aiogoogle import Aiogoogle
 from aiogoogle.auth.creds import ServiceAccountCreds
+from openpyxl import load_workbook
+from sqlalchemy.exc import IntegrityError
 
 from core.db import async_session, engine
 from crud.report import report_crud
@@ -248,16 +253,21 @@ async def get_report(
             )
             async with async_session() as session:
                 async with engine.connect():
-                    report_crud.create(
-                        {
-                            'link': url,
-                            'group': chanal_name
-                        },
-                        session=session
-                    )
-            reports_url.append(
-                f'Отчет по каналу {chanal_name} сформирован: {url}'
-            )
+                    try:
+                        await report_crud.create(
+                            {
+                                'link': url,
+                                'group': chanal_name,
+                                'sheet_id': spreadsheetid
+                            },
+                            session=session
+                        )
+                    except IntegrityError:
+                        logger.info(f'Ссылка {url} уже существует, не '
+                                    'записываем!')
+                reports_url.append(
+                    f'Отчет по каналу {chanal_name} сформирован: {url}'
+                )
         return reports_url
 
 # async def list_files():
@@ -268,6 +278,30 @@ async def get_report(
 #         )
 #         for file in json_res['files']:
 #             print(file['name'])
+
+
+async def get_one_spreadsheet(
+        spreadsheetId,
+        path: str,
+        format: str = 'xlsx'
+        ):
+    """Получает данные одного документа из Google."""
+
+    async with Aiogoogle(service_account_creds=cred) as aiogoogle:
+        service = await aiogoogle.discover('drive', DRIVE_VER)
+        file = (await aiogoogle.as_service_account(
+            service.files.export(
+                fileId=spreadsheetId,
+                mimeType='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+                ),
+        ))
+        xlsx = load_workbook(filename=BytesIO(file))
+        xlsx.save(f'{path}.xlsx')
+        if format == 'CSV':
+            df = pd.DataFrame(pd.read_excel(f'{path}.xlsx'))
+            print(df)
+            df.to_csv(f'{path}.csv')
+        return file
 
 
 async def get_spreadsheet_data(spreadsheetId):
